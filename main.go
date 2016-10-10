@@ -1,10 +1,12 @@
 package main
+package main
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -78,7 +80,7 @@ func main() {
 			return
 		}
 		log.Printf("Bot test: %d", chatid)
-		msgtext := fmt.Sprintf("Some HTTP triggered notification... %d", chatid)
+		msgtext := fmt.Sprintf("Some HTTP triggered notification by prometheus bot... %d", chatid)
 		msg := tgbotapi.NewMessage(chatid, msgtext)
 		sendmsg, err := bot.Send(msg)
 		if err == nil {
@@ -93,6 +95,9 @@ func main() {
 
 	router.POST("/alert/:chatid", func(c *gin.Context) {
 		chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
+
+		log.Printf("Bot alert post: %d", chatid)
+
 		if err != nil {
 			log.Printf("Cat't parse chat id: '%s'", c.Param("chatid"))
 			c.JSON(http.StatusServiceUnavailable, gin.H{
@@ -102,7 +107,8 @@ func main() {
 		}
 
 		var alerts Alerts
-		c.BindJSON(&alerts)
+		//		c.BindJSON(&alerts)
+		binding.JSON.Bind(c.Request, &alerts)
 
 		s, err := json.Marshal(alerts)
 		if err != nil {
@@ -177,7 +183,7 @@ func main() {
 
 		sendmsg, err := bot.Send(msg)
 		if err == nil {
-			c.AbortWithStatus(http.StatusOK)
+			c.String(http.StatusOK, "telegram msg sent.")
 		} else {
 			log.Printf("Error sending message: %s", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{
