@@ -192,6 +192,7 @@ func main() {
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"err":     fmt.Sprint(err),
 				"message": sendmsg,
+				"srcmsg":  fmt.Sprint(msgtext),
 			})
 			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
 			bot.Send(msg)
