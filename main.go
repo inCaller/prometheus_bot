@@ -189,6 +189,8 @@ func main() {
 				"err":     fmt.Sprint(err),
 				"message": sendmsg,
 			})
+			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
+			bot.Send(msg)
 		}
 	})
 	router.Run(*listen_addr)
