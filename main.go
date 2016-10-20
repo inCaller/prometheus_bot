@@ -150,7 +150,9 @@ func main() {
 			if alertDetails != "" {
 				alertDetails = fmt.Sprintf("%s, ", alertDetails)
 			}
-			alertDetails = fmt.Sprintf("%s<a href='%s'>", alertDetails, a.GeneratorURL)
+			if a.GeneratorURL != "" {
+				alertDetails = fmt.Sprintf("%s<a href='%s'>", alertDetails, a.GeneratorURL)
+			}
 			if instance, ok := a.Labels["instance"]; ok {
 				instanceString, _ := instance.(string)
 				alertDetails = fmt.Sprintf("%s%s", alertDetails, strings.Split(instanceString, ":")[0])
@@ -158,7 +160,9 @@ func main() {
 			if job, ok := a.Labels["job"]; ok {
 				alertDetails = fmt.Sprintf("%s[%s]", alertDetails, job)
 			}
-			alertDetails = fmt.Sprintf("%s</a>", alertDetails)
+			if a.GeneratorURL != "" {
+				alertDetails = fmt.Sprintf("%s</a>", alertDetails)
+			}
 		}
 
 		msgtext := fmt.Sprintf(
