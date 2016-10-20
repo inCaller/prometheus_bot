@@ -1,0 +1,34 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: golang, tag: "1.7"}
+inputs:
+  - name: prometheus_bot
+    path: src/github.com/inCaller/prometheus_bot
+outputs:
+  - name: release
+  - name: mail
+run:
+  path: bash
+  args:
+    - '-exc'
+    - |
+      git config --global url."https://".insteadOf git://
+      export GOPATH=$PWD MAILTMPL=$PWD/mail PATH=$PATH:$PWD/bin
+      # Setup project path
+      cd src/github.com/inCaller/prometheus_bot
+      git log -1 --pretty="CI failed: %h %s"    | tee $MAILTMPL/subject_fail
+      git log -1 --pretty="CI passed: %h %s"    | tee $MAILTMPL/subject_success
+      git log -1 --pretty="%ce"                 | tee $MAILTMPL/to
+      {
+      BUILD_URL="{{ ATC_EXTERNAL_URL }}/teams/main/pipelines/{{ BUILD_PIPELINE_NAME }}/jobs/{{ BUILD_JOB_NAME }}/builds/{{ BUILD_NAME }}"
+      echo "<a href='$BUILD_URL'>$BUILD_URL</a><pre>"
+      git log -1 --pretty="%n%B%n"
+      } | tee $MAILTMPL/body
+      {
+      # Setup build instructions
+      go generate
+      go get
+      GOBIN=$GOPATH/release go install ./...
+      } 2>&1 | tee -a $MAILTMPL/body
+      test ${PIPESTATUS[0]} -eq 0

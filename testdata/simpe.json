@@ -1,5 +1,4 @@
-#!/bin/bash
-curl --data '{
+{
     "receiver": "admins",
     "status": "firing",
     "alerts": [
@@ -42,4 +41,3 @@ curl --data '{
     "version": "3",
     "groupKey": 43434343434343434343
 }
-' 127.0.0.1:9087/alert/$(cat config.yaml |grep chatid|awk {'print $2'})
