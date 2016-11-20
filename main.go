@@ -126,7 +126,7 @@ func main() {
 		sort.Strings(keys)
 		groupLabels := make([]string, 0, len(alerts.GroupLabels))
 		for _, k := range keys {
-			groupLabels = append(groupLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.GroupLabels[k]))
+			groupLabels = append(groupLabels, fmt.Sprintf("%s=<code>%s</code>", k, alerts.GroupLabels[k]))
 		}
 
 		keys = make([]string, 0, len(alerts.CommonLabels))
@@ -137,7 +137,7 @@ func main() {
 		commonLabels := make([]string, 0, len(alerts.CommonLabels))
 		for _, k := range keys {
 			if _, ok := alerts.GroupLabels[k]; !ok {
-				commonLabels = append(commonLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.CommonLabels[k]))
+				commonLabels = append(commonLabels, fmt.Sprintf("%s=<code>%s</code>", k, alerts.CommonLabels[k]))
 			}
 		}
 
@@ -148,7 +148,7 @@ func main() {
 		sort.Strings(keys)
 		commonAnnotations := make([]string, 0, len(alerts.CommonAnnotations))
 		for _, k := range keys {
-			commonAnnotations = append(commonAnnotations, fmt.Sprintf("\n%s: <pre>%s</pre>", k, alerts.CommonAnnotations[k]))
+			commonAnnotations = append(commonAnnotations, fmt.Sprintf("\n%s: <code>%s</code>", k, alerts.CommonAnnotations[k]))
 		}
 
 		alertDetails := make([]string, len(alerts.Alerts))
