@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -118,20 +119,35 @@ func main() {
 		}
 		log.Printf("Alert: %s", s)
 
-		groupLabels := make([]string, 0, len(alerts.GroupLabels))
+		keys := make([]string, 0, len(alerts.GroupLabels))
 		for k := range alerts.GroupLabels {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		groupLabels := make([]string, 0, len(alerts.GroupLabels))
+		for _, k := range keys {
 			groupLabels = append(groupLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.GroupLabels[k]))
 		}
 
-		commonLabels := make([]string, 0, len(alerts.CommonLabels))
+		keys = make([]string, 0, len(alerts.CommonLabels))
 		for k := range alerts.CommonLabels {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		commonLabels := make([]string, 0, len(alerts.CommonLabels))
+		for _, k := range keys {
 			if _, ok := alerts.GroupLabels[k]; !ok {
 				commonLabels = append(commonLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.CommonLabels[k]))
 			}
 		}
 
-		commonAnnotations := make([]string, 0, len(alerts.CommonAnnotations))
+		keys = make([]string, 0, len(alerts.CommonAnnotations))
 		for k := range alerts.CommonAnnotations {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		commonAnnotations := make([]string, 0, len(alerts.CommonAnnotations))
+		for _, k := range keys {
 			commonAnnotations = append(commonAnnotations, fmt.Sprintf("\n%s: <pre>%s</pre>", k, alerts.CommonAnnotations[k]))
 		}
 
