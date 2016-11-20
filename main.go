@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"gopkg.in/yaml.v2"
 )
 
 type Alerts struct {
@@ -58,7 +59,7 @@ func main() {
 
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	// bot.Debug = true
@@ -72,7 +73,7 @@ func main() {
 	router.GET("/ping/:chatid", func(c *gin.Context) {
 		chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
 		if err != nil {
-			log.Printf("Cat't parse chat id: '%s'", c.Param("chatid"))
+			log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"err": fmt.Sprint(err),
 			})
@@ -98,7 +99,7 @@ func main() {
 		log.Printf("Bot alert post: %d", chatid)
 
 		if err != nil {
-			log.Printf("Cat't parse chat id: '%s'", c.Param("chatid"))
+			log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"err": fmt.Sprint(err),
 			})
@@ -111,57 +112,40 @@ func main() {
 
 		s, err := json.Marshal(alerts)
 		if err != nil {
-			fmt.Println(err)
+			log.Print(err)
+			// XXX c.JSON() isn't needed here?
 			return
 		}
 		log.Printf("Alert: %s", s)
 
-		groupLabels := ""
+		groupLabels := make([]string, 0, len(alerts.GroupLabels))
 		for k := range alerts.GroupLabels {
-			if groupLabels == "" {
-				groupLabels = fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.GroupLabels[k])
-			} else {
-				groupLabels = fmt.Sprintf("%s, %s=<pre>%s</pre>", groupLabels, k, alerts.GroupLabels[k])
-			}
+			groupLabels = append(groupLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.GroupLabels[k]))
 		}
 
-		commonLabels := ""
+		commonLabels := make([]string, 0, len(alerts.CommonLabels))
 		for k := range alerts.CommonLabels {
-			if _, ok := alerts.GroupLabels[k]; ok == false {
-				if commonLabels == "" {
-					commonLabels = fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.CommonLabels[k])
-				} else {
-					commonLabels = fmt.Sprintf("%s, %s=<pre>%s</pre>", commonLabels, k, alerts.CommonLabels[k])
-				}
+			if _, ok := alerts.GroupLabels[k]; !ok {
+				commonLabels = append(commonLabels, fmt.Sprintf("%s=<pre>%s</pre>", k, alerts.CommonLabels[k]))
 			}
 		}
 
-		commonAnnotations := ""
+		commonAnnotations := make([]string, 0, len(alerts.CommonAnnotations))
 		for k := range alerts.CommonAnnotations {
-			if commonAnnotations == "" {
-				commonAnnotations = fmt.Sprintf("\n%s: <pre>%s</pre>", k, alerts.CommonAnnotations[k])
-			} else {
-				commonAnnotations = fmt.Sprintf("%s\n%s: <pre>%s</pre>", commonAnnotations, k, alerts.CommonAnnotations[k])
-			}
+			commonAnnotations = append(commonAnnotations, fmt.Sprintf("\n%s: <pre>%s</pre>", k, alerts.CommonAnnotations[k]))
 		}
 
-		alertDetails := ""
-		for _, a := range alerts.Alerts {
-			if alertDetails != "" {
-				alertDetails = fmt.Sprintf("%s, ", alertDetails)
-			}
-			if a.GeneratorURL != "" {
-				alertDetails = fmt.Sprintf("%s<a href='%s'>", alertDetails, a.GeneratorURL)
-			}
+		alertDetails := make([]string, len(alerts.Alerts))
+		for i, a := range alerts.Alerts {
 			if instance, ok := a.Labels["instance"]; ok {
 				instanceString, _ := instance.(string)
-				alertDetails = fmt.Sprintf("%s%s", alertDetails, strings.Split(instanceString, ":")[0])
+				alertDetails[i] += strings.Split(instanceString, ":")[0]
 			}
 			if job, ok := a.Labels["job"]; ok {
-				alertDetails = fmt.Sprintf("%s[%s]", alertDetails, job)
+				alertDetails[i] += fmt.Sprintf("[%s]", job)
 			}
 			if a.GeneratorURL != "" {
-				alertDetails = fmt.Sprintf("%s</a>", alertDetails)
+				alertDetails[i] = fmt.Sprintf("<a href='%s'>%s</a>", a.GeneratorURL, alertDetails[i])
 			}
 		}
 
@@ -171,10 +155,10 @@ func main() {
 			alerts.Receiver,
 			strings.ToUpper(alerts.Status),
 			len(alerts.Alerts),
-			groupLabels,
-			commonLabels,
-			commonAnnotations,
-			alertDetails,
+			strings.Join(groupLabels, ", "),
+			strings.Join(commonLabels, ", "),
+			strings.Join(commonAnnotations, ""),
+			strings.Join(alertDetails, ", "),
 		)
 
 		log.Printf("message: ", msgtext)
@@ -202,14 +186,12 @@ func main() {
 }
 
 func telegramBot(bot *tgbotapi.BotAPI) {
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	for update := range updates {
@@ -220,5 +202,4 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 			}
 		}
 	}
-
 }
