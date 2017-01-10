@@ -1,0 +1,145 @@
+{
+    "alerts": [
+        {
+            "annotations": {
+                "description": "mail01.example.com has been down for more than 1 minute.",
+                "summary": "Service mail01.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "mail01.example.com",
+                "job": "wakeup",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T15:03:37.811Z"
+        },
+        {
+            "annotations": {
+                "description": "mail02.example.com has been down for more than 1 minute.",
+                "summary": "Service mail02.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "mail02.example.com",
+                "job": "wakeup",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T15:03:37.811Z"
+        },
+        {
+            "annotations": {
+                "description": "mail02.example.com has been down for more than 1 minute.",
+                "summary": "Service mail02.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "mail02.example.com",
+                "job": "wakeup",
+                "node": "mail02.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T19:35:37.826Z"
+        },
+        {
+            "annotations": {
+                "description": "smpt03.example.com has been down for more than 1 minute.",
+                "summary": "Service example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "smpt03.example.com",
+                "job": "wakeup",
+                "node": "smpt03.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T22:42:37.842Z"
+        },
+        {
+            "annotations": {
+                "description": "smpt01.example.com has been down for more than 1 minute.",
+                "summary": "Service smpt01.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "smpt01.example.com",
+                "job": "wakeup",
+                "node": "smpt01.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T22:42:37.842Z"
+        },
+        {
+            "annotations": {
+                "description": "smpt02.example.com has been down for more than 1 minute.",
+                "summary": "Service smpt02.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "smpt02.example.com",
+                "job": "wakeup",
+                "node": "smpt02.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T22:47:37.842Z"
+        },
+        {
+            "annotations": {
+                "description": "smpt04.example.com has been down for more than 1 minute.",
+                "summary": "Service smpt04.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "smpt04.example.com",
+                "job": "wakeup",
+                "node": "smpt04.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-19T22:47:37.842Z"
+        },
+        {
+            "annotations": {
+                "description": "mail01.example.com has been down for more than 1 minute.",
+                "summary": "Service mail01.example.com down"
+            },
+            "sendsAt": "",
+            "generatorURL": "https://example.com/graph#%5B%7B%22expr%22%3A%22up%20%3D%3D%200%22%2C%22tab%22%3A0%7D%5D",
+            "labels": {
+                "alertname": "node_down",
+                "instance": "mail01.example.com",
+                "job": "wakeup",
+                "node": "mail01.example.com",
+                "severity": "critical"
+            },
+            "startsAt": "2016-10-20T13:40:37.821Z"
+        }
+    ],
+    "commonAnnotations": {
+    },
+    "commonLabels": {
+        "alertname": "node_down",
+        "job": "wakeup",
+        "severity": "critical"
+    },
+    "externalURL": "https://alert-manager.example.com",
+    "groupKey": 0,
+    "groupLabels": {
+        "alertname": "node_down"
+    },
+    "receiver": "admins-critical",
+    "status": "resolved",
+    "version": 0
+}
