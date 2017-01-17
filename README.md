@@ -43,3 +43,7 @@ For test your instance, you must only export TELEGRAM_CHATID environment variabl
 export TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID"
 make test
 ```
+## For build docker image
+```bash
+make docker
+```
