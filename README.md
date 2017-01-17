@@ -14,10 +14,12 @@ make
 
 ## Usage
 
-1. Specify telegram token in ```config.yaml```:
+1. Specify telegram token in ```config/config.yaml```:
 
     ```yml
     telegram_token: "token goes here"
+    listen_addr: ":9087"
+    debug_bot: false
     ```
 
 2. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
@@ -45,5 +47,13 @@ make test
 ```
 ## For build docker image
 ```bash
+# build image
 make docker
+# run container
+docker run -d --name prometheus_bot -p 9087:9087 -v /etc/alertmanager/prometheus_bot:/prometheus_bot/config prometheus_bot
+# create config file
+cat /etc/alertmanager/prometheus_bot/config.yaml 
+telegram_token: "1234:asdf"
+listen_addr: ":9087"
+debug_bot: false
 ```
