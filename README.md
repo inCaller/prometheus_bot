@@ -43,3 +43,15 @@ For test your instance, you must only export TELEGRAM_CHATID environment variabl
 export TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID"
 make test
 ```
+
+## Customizing messages with template
+
+Bot support [go templating language](https://golang.org/pkg/text/template/).
+Use it for customizing your message.
+For enable template you must call bot with option -t template.tmpl
+
+
+```telegram_bot -t template.tmpl```
+
+Is provided a template file with all possibile variable, use ```make test``` for check, result message.
+Telegram support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
