@@ -1,0 +1,3 @@
+telegram_token: "1234:abc"
+listen_addr: ":9087"
+debug_bot: false
