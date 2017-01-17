@@ -1,0 +1,42 @@
+
+{{.CommonAnnotations }}
+{{.CommonLabels}}
+{{.ExternalURL}}
+{{.GroupLabels}}
+{{.Receiver}}
+{{.Status}}
+
+<b>Active Alert List:</b>
+{{ range $val := .Alerts -}}
+
+{{range $ann := $val.Annotations -}}
+<b>Annotations:</b>
+{{$ann}}
+
+{{- end}}
+{{- end}}
+Version:{{.Version}}
+
+{{/*Possible variable of template
+  	Alerts            []Alert
+  	CommonAnnotations map[string]interface{}
+  	CommonLabels      map[string]interface{}
+  	ExternalURL       string
+  	GroupKey          int
+  	GroupLabels       map[string]interface{}
+  	Receiver          string
+  	Status            string
+  	Version
+
+    SubVariable Alert use make test for testing this
+
+  	Annotations  map[string]interface{}
+  	EndsAt       string
+  	GeneratorURL string                 `
+  	Labels       map[string]interface{}
+  	StartsAt     string
+
+    All MAP params are iterable with range.
+    About go template language take look:https://golang.org/pkg/text/template/
+
+  */}}

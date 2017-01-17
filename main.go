@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,6 +17,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/yaml.v2"
+
+	"text/template"
 )
 
 type Alerts struct {
@@ -39,6 +43,7 @@ type Alert struct {
 
 var config_path = flag.String("c", "config.yaml", "Path to a config file")
 var listen_addr = flag.String("l", ":9087", "Listen address")
+var template_path = flag.String("t", "", "Template file")
 
 type Config struct {
 	TelegramToken string `yaml:"telegram_token"`
@@ -47,6 +52,12 @@ type Config struct {
 var cfg = Config{}
 
 func main() {
+	var temaplteHadle *template.Template
+	var bytesBuff bytes.Buffer
+	var writer io.Writer
+	var msgtext string
+	var alerts Alerts
+
 	flag.Parse()
 
 	content, err := ioutil.ReadFile(*config_path)
@@ -63,6 +74,21 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if *template_path != "" {
+		buf, err := ioutil.ReadFile(*template_path)
+		if err != nil {
+			log.Fatalf("Problem reading template file: %v", err)
+		}
+		template_content := string(buf)
+
+		// let't read template
+		writer = io.Writer(&bytesBuff)
+		tmpH, err := template.New(*template_path).Parse(template_content)
+		temaplteHadle = tmpH
+		if err != nil {
+			log.Fatalf("Problem reading parsing template file: %v", err)
+		}
+	}
 	// bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
@@ -107,14 +133,11 @@ func main() {
 			return
 		}
 
-		var alerts Alerts
-		//		c.BindJSON(&alerts)
 		binding.JSON.Bind(c.Request, &alerts)
 
 		s, err := json.Marshal(alerts)
 		if err != nil {
 			log.Print(err)
-			// XXX c.JSON() isn't needed here?
 			return
 		}
 		log.Printf("Alert: %s", s)
@@ -165,17 +188,25 @@ func main() {
 			}
 		}
 
-		msgtext := fmt.Sprintf(
-			"<a href='%s/#/alerts?receiver=%s'>[%s:%d]</a>\ngrouped by: %s\nlabels: %s%s\n%s",
-			alerts.ExternalURL,
-			alerts.Receiver,
-			strings.ToUpper(alerts.Status),
-			len(alerts.Alerts),
-			strings.Join(groupLabels, ", "),
-			strings.Join(commonLabels, ", "),
-			strings.Join(commonAnnotations, ""),
-			strings.Join(alertDetails, ", "),
-		)
+		if *template_path == "" {
+			msgtext = fmt.Sprintf(
+				"<a href='%s/#/alerts?receiver=%s'>[%s:%d]</a>\ngrouped by: %s\nlabels: %s%s\n%s",
+				alerts.ExternalURL,
+				alerts.Receiver,
+				strings.ToUpper(alerts.Status),
+				len(alerts.Alerts),
+				strings.Join(groupLabels, ", "),
+				strings.Join(commonLabels, ", "),
+				strings.Join(commonAnnotations, ""),
+				strings.Join(alertDetails, ", "),
+			)
+		} else {
+			err = temaplteHadle.Execute(writer, alerts)
+			if err != nil {
+				panic(err)
+			}
+			msgtext = bytesBuff.String()
+		}
 
 		log.Printf("message: ", msgtext)
 
