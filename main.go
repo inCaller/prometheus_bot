@@ -248,11 +248,9 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 	}
 
 	for update := range updates {
-		if update.Message.NewChatMember != nil {
-			if update.Message.NewChatMember.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
-				bot.Send(msg)
-			}
+		if update.Message == nil {
+			continue
 		}
+		log.Println("Received message: [%s] %s", update.Message.From.UserName, update.Message.Text)
 	}
 }
