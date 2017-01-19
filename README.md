@@ -18,6 +18,8 @@ make
 
     ```yml
     telegram_token: "token goes here"
+    template_path: "template.tmpl" # ONLY IF YOU USING TEMPLATE
+    time_zone: "Europe/Rome" # ONLY IF YOU USING TEMPLATE
     ```
 
 2. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
@@ -46,12 +48,22 @@ make test
 
 ## Customizing messages with template
 
-Bot support [go templating language](https://golang.org/pkg/text/template/).
+This bot support [go templating language](https://golang.org/pkg/text/template/).
 Use it for customizing your message.
-For enable template you must call bot with option -t template.tmpl
 
+For enable template you must set this two settings in your ```config.yaml``` or template will skip.
+```yml
+template_path: "template.tmpl" # your template file name
+time_zone: "Europe/Rome" # yor time zone check it out from WIKI
+```
+[WIKI List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
-```telegram_bot -t template.tmpl```
+Best way for build your custom template is:
+-    Enable bot with ```-d``` flag
+-    Catch some of your alerts in json, then copy it from bot STDOUT
+-    Save json in testdata/yourname.json
+-    Launch ```make test```
 
-Is provided a template file with all possibile variable, use ```make test``` for check, result message.
-Telegram support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
+```-d``` options will enable ```debug``` mode and template file will reload every message, else template is load once on startup.
+
+Is provided as default template file with all possibile variable. Remeber that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
