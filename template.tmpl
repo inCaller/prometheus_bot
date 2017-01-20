@@ -1,5 +1,4 @@
-
-{{.CommonAnnotations }}
+{{.CommonAnnotations}}
 {{.CommonLabels}}
 {{.ExternalURL}}
 {{.GroupLabels}}
@@ -8,13 +7,8 @@
 
 <b>Active Alert List:</b>
 {{ range $val := .Alerts -}}
-
-{{range $ann := $val.Annotations -}}
-<b>Annotations:</b>
-{{$ann}}
-
-{{- end}}
-{{- end}}
+  {{$val}}
+{{ end}}
 Version:{{.Version}}
 
 {{/*Possible variable of template
