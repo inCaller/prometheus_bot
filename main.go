@@ -281,8 +281,8 @@ func POST_Handling(c *gin.Context) {
 		return
 	}
 
-	log.Println("+-----------------------  A L E R T  -----------------------+");
-	log.Printf("%s",s)
+	log.Println("+------------------  A L E R T  J S O N  -------------------+");
+	log.Printf("%s", s)
 	log.Println("+-----------------------------------------------------------+\n\n");
 
 	// Decide how format Text
