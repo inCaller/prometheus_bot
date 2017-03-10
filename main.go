@@ -1,4 +1,4 @@
-package main
+package main  // import "github.com/inCaller/prometheus_bot"
 
 import (
 	"bytes"
