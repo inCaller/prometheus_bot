@@ -5,7 +5,7 @@ echo "1..$(($(echo "$json_files"|wc -l) * $(printf "$template_files\n\n"|wc -l))
 echo -n "" > bot.log
 for template_file in "" $template_files
 do
-    ./prometheus_bot $(test -n "${template_file}" && echo "-t $template_file") >> bot.log 2>&1 &
+    ./prometheus_bot $(test -n "${template_file}" && echo "-d -t $template_file") >> bot.log 2>&1 &
     sleep 3
     for json_file in $json_files
     do
