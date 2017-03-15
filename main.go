@@ -1,4 +1,4 @@
-package main  // import "github.com/inCaller/prometheus_bot"
+package main // import "github.com/inCaller/prometheus_bot"
 
 import (
 	"bytes"
@@ -43,15 +43,16 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken string 	`yaml:"telegram_token"`
-	TemplatePath string 	`yaml:"template_path"`
-	TimeZone string 			`yaml:"time_zone"`
+	TelegramToken string `yaml:"telegram_token"`
+	TemplatePath  string `yaml:"template_path"`
+	TimeZone      string `yaml:"time_zone"`
 }
 
 // Global
 var config_path = flag.String("c", "config.yaml", "Path to a config file")
 var listen_addr = flag.String("l", ":9087", "Listen address")
-var debug = flag.Bool("d",false,"Debug template")
+var template_path = flag.String("t", "", "Path to a template file")
+var debug = flag.Bool("d", false, "Debug template")
 
 var cfg = Config{}
 var bot *tgbotapi.BotAPI
@@ -59,7 +60,7 @@ var temaplteHadle *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
-	"FormatDate" : func(toformat string) string {
+	"FormatDate": func(toformat string) string {
 		IN_layout := "2006-01-02T15:04:05.000-07:00"
 		OUT_layout := "02/01/2006 15:04:05"
 
@@ -106,6 +107,10 @@ func main() {
 		log.Fatalf("Error parsing configuration file: %v", err)
 	}
 
+	if *template_path != "" {
+		cfg.TemplatePath = *template_path
+	}
+
 	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		log.Fatal(err)
@@ -119,16 +124,16 @@ func main() {
 
 		if err != nil {
 			log.Fatalf("Problem reading parsing template file: %v", err)
-		}else {
-			log.Printf("Load template file:%s",cfg.TemplatePath)
+		} else {
+			log.Printf("Load template file:%s", cfg.TemplatePath)
 		}
 
-		if cfg.TimeZone == ""{
+		if cfg.TimeZone == "" {
 			log.Fatalf("You must define time_zone of your bot")
 			panic(-1)
 		}
 
-	}else {
+	} else {
 		*debug = false
 	}
 	// bot.Debug = true
@@ -162,7 +167,7 @@ func GET_Handling(c *gin.Context) {
 	if err == nil {
 		c.String(http.StatusOK, msgtext)
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"err":     fmt.Sprint(err),
 			"message": sendmsg,
 		})
@@ -254,7 +259,7 @@ func AlertFormatTemplate(alerts Alerts) string {
 	if err != nil {
 		panic(err)
 	}
-	 return bytesBuff.String()
+	return bytesBuff.String()
 }
 
 func POST_Handling(c *gin.Context) {
@@ -281,20 +286,20 @@ func POST_Handling(c *gin.Context) {
 		return
 	}
 
-	log.Println("+------------------  A L E R T  J S O N  -------------------+");
+	log.Println("+------------------  A L E R T  J S O N  -------------------+")
 	log.Printf("%s", s)
-	log.Println("+-----------------------------------------------------------+\n\n");
+	log.Println("+-----------------------------------------------------------+\n\n")
 
 	// Decide how format Text
 	if cfg.TemplatePath == "" {
-			msgtext = AlertFormatStandard(alerts)
+		msgtext = AlertFormatStandard(alerts)
 	} else {
-			msgtext = AlertFormatTemplate(alerts)
+		msgtext = AlertFormatTemplate(alerts)
 	}
 	// Print in Log result message
-	log.Println("+---------------  F I N A L   M E S S A G E  ---------------+");
+	log.Println("+---------------  F I N A L   M E S S A G E  ---------------+")
 	log.Println(msgtext)
-	log.Println("+-----------------------------------------------------------+");
+	log.Println("+-----------------------------------------------------------+")
 
 	msg := tgbotapi.NewMessage(chatid, msgtext)
 	msg.ParseMode = tgbotapi.ModeHTML
