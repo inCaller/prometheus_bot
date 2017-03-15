@@ -39,11 +39,24 @@ Here's the receivers part of the alertmanager configuration file:
 Replace ```-chat_id``` with the number you got from your bot, with ```-```. To use multiple chats just add more receivers.
 
 
-## Test your instance
-For test your instance, you must only export TELEGRAM_CHATID environment variable
+## Test
+
+To run tests with `make test` you have to:
+
+- Create `config.yml` with a valid telegram API key and timezone in the project directory
+- Create `prometheus_bot` executable binary in the project directory
+- Define chat ID with `TELEGRAM_CHATID` environment variable
+- Ensure port `9087` on localhost is available to bind to
+
 ```bash
 export TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID"
 make test
+```
+
+or
+
+```sh
+TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID" make test
 ```
 
 ## Customizing messages with template
@@ -56,6 +69,9 @@ For enable template you must set this two settings in your ```config.yaml``` or 
 template_path: "template.tmpl" # your template file name
 time_zone: "Europe/Rome" # yor time zone check it out from WIKI
 ```
+
+You can also pass template path with `-t` command line argument, it has higher priority than the config option.
+
 [WIKI List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
 Best way for build your custom template is:
@@ -66,4 +82,4 @@ Best way for build your custom template is:
 
 ```-d``` options will enable ```debug``` mode and template file will reload every message, else template is load once on startup.
 
-Is provided as default template file with all possibile variable. Remeber that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
+Is provided as [default template file](testdata/default.tmpl) with all possibile variable. Remember that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
