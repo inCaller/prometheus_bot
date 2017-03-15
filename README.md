@@ -20,11 +20,14 @@ make
     ```
 
 2. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
-3. Add your bot to a group. It should report group id now
+
+3. Create Telegram bot with BotFader, it will return you bot token
+
+4. Add your bot to a group, get CHAT-ID, is fist info that telegram print in your new chat group.
 
 ### Configuring alert manager
 
-Here's the receivers part of the alert manager configuration file:
+Alert manager configuration file:
 
 ```yml
 - name: 'admins'
@@ -35,7 +38,6 @@ Here's the receivers part of the alert manager configuration file:
 
 Replace ```-chat_id``` with the number you got from your bot, with ```-```. To use multiple chats just add more receivers.
 
-
 ## Test your instance
 For test your instance, you must only export TELEGRAM_CHATID environment variable
 ```bash
@@ -43,7 +45,8 @@ export TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID"
 make test
 ```
 ### Create your own test
-When alert manager send alert to bot, only debug ```-d``` it dump json that generate alert. You can copy paste this json for your test.
+When alert manager send alert to telegram bot, *only debug flag ```-d```* Telegram bot will dump json in that generate alert, in stdout.
+You can copy paste this from json for your test, by creating new .json.
 Test will send ```*.json``` file into ```testdata``` folder
 
 ## Customizing messages with template
@@ -69,7 +72,7 @@ Best way for build your custom template is:
 Is provided as default template file with all possibile variable. Remeber that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
 
 ### Template extra functions
-Template language support many different functions for impoving text, number and data formatting.
+Template language support many different functions for text, number and data formatting.
 
 #### Support this functions list
 
