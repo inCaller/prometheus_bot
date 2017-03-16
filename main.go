@@ -1,4 +1,4 @@
-package main  // import "github.com/inCaller/prometheus_bot"
+package main // import "github.com/inCaller/prometheus_bot"
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,7 +20,7 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/yaml.v2"
 
-	"text/template"
+	"html/template"
 )
 
 type Alerts struct {
@@ -43,23 +44,24 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken string 	`yaml:"telegram_token"`
-	TemplatePath string 	`yaml:"template_path"`
-	TimeZone string 			`yaml:"time_zone"`
+	TelegramToken string `yaml:"telegram_token"`
+	TemplatePath  string `yaml:"template_path"`
+	TimeZone      string `yaml:"time_zone"`
 }
 
 // Global
 var config_path = flag.String("c", "config.yaml", "Path to a config file")
 var listen_addr = flag.String("l", ":9087", "Listen address")
-var debug = flag.Bool("d",false,"Debug template")
+var template_path = flag.String("t", "", "Path to a template file")
+var debug = flag.Bool("d", false, "Debug template")
 
 var cfg = Config{}
 var bot *tgbotapi.BotAPI
-var temaplteHadle *template.Template
+var tmpH *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
-	"FormatDate" : func(toformat string) string {
+	"FormatDate": func(toformat string) string {
 		IN_layout := "2006-01-02T15:04:05.000-07:00"
 		OUT_layout := "02/01/2006 15:04:05"
 
@@ -94,6 +96,19 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 	}
 }
 
+func loadTemplate(tmplPath string) *template.Template {
+	// let's read template
+	tmpH, err := template.New(path.Base(tmplPath)).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
+
+	if err != nil {
+		log.Fatalf("Problem reading parsing template file: %v", err)
+	} else {
+		log.Printf("Load template file:%s", tmplPath)
+	}
+
+	return tmpH
+}
+
 func main() {
 	flag.Parse()
 
@@ -106,6 +121,10 @@ func main() {
 		log.Fatalf("Error parsing configuration file: %v", err)
 	}
 
+	if *template_path != "" {
+		cfg.TemplatePath = *template_path
+	}
+
 	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		log.Fatal(err)
@@ -113,25 +132,19 @@ func main() {
 
 	bot = bot_tmp
 	if cfg.TemplatePath != "" {
-		// let't read template
-		tmpH, err := template.New(cfg.TemplatePath).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
-		temaplteHadle = tmpH
 
-		if err != nil {
-			log.Fatalf("Problem reading parsing template file: %v", err)
-		}else {
-			log.Printf("Load template file:%s",cfg.TemplatePath)
-		}
+		tmpH = loadTemplate(cfg.TemplatePath)
 
-		if cfg.TimeZone == ""{
+		if cfg.TimeZone == "" {
 			log.Fatalf("You must define time_zone of your bot")
 			panic(-1)
 		}
 
-	}else {
+	} else {
 		*debug = false
+		tmpH = nil
 	}
-	// bot.Debug = true
+	//bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -162,7 +175,7 @@ func GET_Handling(c *gin.Context) {
 	if err == nil {
 		c.String(http.StatusOK, msgtext)
 	} else {
-		c.JSON(http.StatusBadRequest, gin.H {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"err":     fmt.Sprint(err),
 			"message": sendmsg,
 		})
@@ -236,25 +249,19 @@ func AlertFormatTemplate(alerts Alerts) string {
 
 	if *debug {
 		log.Printf("Reloading Template\n")
-
-		// Template is in debug then, continue read template file
-		tmpH, err := template.New(cfg.TemplatePath).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
-		temaplteHadle = tmpH
-		err = temaplteHadle.Execute(writer, alerts)
-
-		if err != nil {
-			log.Fatalf("Problem reading parsing template file: %v", err)
-		}
-
-	} else {
-		temaplteHadle.Funcs(funcMap)
-		err = temaplteHadle.Execute(writer, alerts)
+		// reload template bacause we in debug mode
+		tmpH = loadTemplate(cfg.TemplatePath)
 	}
+
+	tmpH.Funcs(funcMap)
+	err = tmpH.Execute(writer, alerts)
 
 	if err != nil {
+		log.Fatalf("Problem with template execution: %v", err)
 		panic(err)
 	}
-	 return bytesBuff.String()
+
+	return bytesBuff.String()
 }
 
 func POST_Handling(c *gin.Context) {
@@ -281,20 +288,20 @@ func POST_Handling(c *gin.Context) {
 		return
 	}
 
-	log.Println("+------------------  A L E R T  J S O N  -------------------+");
+	log.Println("+------------------  A L E R T  J S O N  -------------------+")
 	log.Printf("%s", s)
-	log.Println("+-----------------------------------------------------------+\n\n");
+	log.Println("+-----------------------------------------------------------+\n\n")
 
 	// Decide how format Text
 	if cfg.TemplatePath == "" {
-			msgtext = AlertFormatStandard(alerts)
+		msgtext = AlertFormatStandard(alerts)
 	} else {
-			msgtext = AlertFormatTemplate(alerts)
+		msgtext = AlertFormatTemplate(alerts)
 	}
 	// Print in Log result message
-	log.Println("+---------------  F I N A L   M E S S A G E  ---------------+");
+	log.Println("+---------------  F I N A L   M E S S A G E  ---------------+")
 	log.Println(msgtext)
-	log.Println("+-----------------------------------------------------------+");
+	log.Println("+-----------------------------------------------------------+")
 
 	msg := tgbotapi.NewMessage(chatid, msgtext)
 	msg.ParseMode = tgbotapi.ModeHTML
