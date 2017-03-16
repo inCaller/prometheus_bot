@@ -20,7 +20,7 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"gopkg.in/yaml.v2"
 
-	"text/template"
+	"html/template"
 )
 
 type Alerts struct {
