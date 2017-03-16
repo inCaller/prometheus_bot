@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -56,7 +57,7 @@ var debug = flag.Bool("d", false, "Debug template")
 
 var cfg = Config{}
 var bot *tgbotapi.BotAPI
-var temaplteHadle *template.Template
+var tmpH *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
@@ -95,6 +96,19 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 	}
 }
 
+func loadTemplate(tmplPath string) *template.Template {
+	// let's read template
+	tmpH, err := template.New(path.Base(tmplPath)).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
+
+	if err != nil {
+		log.Fatalf("Problem reading parsing template file: %v", err)
+	} else {
+		log.Printf("Load template file:%s", tmplPath)
+	}
+
+	return tmpH
+}
+
 func main() {
 	flag.Parse()
 
@@ -118,15 +132,8 @@ func main() {
 
 	bot = bot_tmp
 	if cfg.TemplatePath != "" {
-		// let't read template
-		tmpH, err := template.New(cfg.TemplatePath).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
-		temaplteHadle = tmpH
 
-		if err != nil {
-			log.Fatalf("Problem reading parsing template file: %v", err)
-		} else {
-			log.Printf("Load template file:%s", cfg.TemplatePath)
-		}
+		tmpH = loadTemplate(cfg.TemplatePath)
 
 		if cfg.TimeZone == "" {
 			log.Fatalf("You must define time_zone of your bot")
@@ -135,8 +142,9 @@ func main() {
 
 	} else {
 		*debug = false
+		tmpH = nil
 	}
-	// bot.Debug = true
+	//bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -241,24 +249,18 @@ func AlertFormatTemplate(alerts Alerts) string {
 
 	if *debug {
 		log.Printf("Reloading Template\n")
-
-		// Template is in debug then, continue read template file
-		tmpH, err := template.New(cfg.TemplatePath).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
-		temaplteHadle = tmpH
-		err = temaplteHadle.Execute(writer, alerts)
-
-		if err != nil {
-			log.Fatalf("Problem reading parsing template file: %v", err)
-		}
-
-	} else {
-		temaplteHadle.Funcs(funcMap)
-		err = temaplteHadle.Execute(writer, alerts)
+		// reload template bacause we in debug mode
+		tmpH = loadTemplate(cfg.TemplatePath)
 	}
+
+	tmpH.Funcs(funcMap)
+	err = tmpH.Execute(writer, alerts)
 
 	if err != nil {
+		log.Fatalf("Problem with template execution: %v", err)
 		panic(err)
 	}
+
 	return bytesBuff.String()
 }
 
