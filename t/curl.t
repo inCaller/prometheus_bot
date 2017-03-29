@@ -1,6 +1,7 @@
 #!/bin/bash
 json_files=$(find testdata -name *.json)
 template_files=$(find testdata -name '*.tmpl')
+
 echo "1..$(($(echo "$json_files"|wc -l) * $(printf "$template_files\n\n"|wc -l)))"
 echo -n "" > bot.log
 for template_file in "" $template_files

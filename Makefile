@@ -5,4 +5,5 @@ all: main.go
 test:
 	prove -v
 clean:
-	rm $(TARGET)
+	go clean
+	rm -f $(TARGET)

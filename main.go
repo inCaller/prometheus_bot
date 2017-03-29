@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"math"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -44,9 +45,131 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken string `yaml:"telegram_token"`
-	TemplatePath  string `yaml:"template_path"`
-	TimeZone      string `yaml:"time_zone"`
+	TelegramToken string 	`yaml:"telegram_token"`
+	TemplatePath string 	`yaml:"template_path"`
+	TimeZone string 			`yaml:"template_time_zone"`
+	TimeOutFormat string  `yaml:"template_time_outdata"`
+}
+
+const (
+	Kb = iota
+	Mb
+	Gb
+	Tb
+	Pb
+	ScaleSize_MAX
+)
+
+
+func RoundPrec(x float64, prec int) float64 {
+	if math.IsNaN(x) || math.IsInf(x, 0) {
+		return x
+	}
+
+	sign := 1.0
+	if x < 0 {
+		sign = -1
+		x *= -1
+	}
+
+	var rounder float64
+	pow := math.Pow(10, float64(prec))
+	intermed := x * pow
+	_, frac := math.Modf(intermed)
+
+	if frac >= 0.5 {
+		rounder = math.Ceil(intermed)
+	} else {
+		rounder = math.Floor(intermed)
+	}
+
+	return rounder / pow * sign
+}
+
+
+
+/******************************************************************************
+ *
+ *          Function for formatting template
+ *
+ ******************************************************************************/
+
+func str_Format_byte(in string) string {
+	var j1 int
+	var str_Size string
+
+	f, err := strconv.ParseFloat(in, 64)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for j1 < ScaleSize_MAX {
+
+		if f > 1024 {
+		f/=1024.0
+		} else {
+
+			switch j1 {
+			case Kb:
+				str_Size = "Kb"
+			case Mb:
+				str_Size = "Mb"
+			case Gb:
+				str_Size = "Gb"
+			case Tb:
+				str_Size = "Tb"
+			case Pb:
+				str_Size = "Pb"
+			}
+			break
+		}
+		j1++
+	}
+
+	str_fl := strconv.FormatFloat(f, 'f', 2, 64)
+
+	return fmt.Sprintf("%s %s", str_fl, str_Size)
+}
+
+func str_formatFloat(f string) string {
+		v,_ := strconv.ParseFloat(f, 64)
+		v = RoundPrec(v,2)
+		return strconv.FormatFloat(v, 'f', -1, 64)
+}
+
+
+func str_FormatDate(toformat string) string {
+
+	// Error handling
+	if cfg.TimeZone == "" {
+		log.Println("template_time_zone is not set, if you use template and `str_FormatDate` func is required")
+		panic(nil)
+	}
+
+	if cfg.TimeOutFormat == "" {
+		log.Println("template_time_outdata param is not set, if you use template and `str_FormatDate` func is required")
+		panic(nil)
+	}
+
+	IN_layout := "2006-01-02T15:04:05.000-07:00"
+
+	t, err := time.Parse(IN_layout, toformat)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	loc, _ := time.LoadLocation(cfg.TimeZone)
+
+	return t.In(loc).Format(cfg.TimeOutFormat)
+}
+
+func HasKey(dict map[string] interface{}, key_search string) bool {
+	if _, ok := dict[key_search]; ok {
+	    return true
+	}
+	return false
 }
 
 // Global
@@ -61,20 +184,13 @@ var tmpH *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
-	"FormatDate": func(toformat string) string {
-		IN_layout := "2006-01-02T15:04:05.000-07:00"
-		OUT_layout := "02/01/2006 15:04:05"
-
-		t, err := time.Parse(IN_layout, toformat)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		loc, _ := time.LoadLocation(cfg.TimeZone)
-
-		return t.In(loc).Format(OUT_layout)
-	},
+	"str_FormatDate" : str_FormatDate,
+	"str_UpperCase":strings.ToUpper,
+	"str_LowerCase":strings.ToLower,
+	"str_Title":strings.Title,
+	"str_formatFloat":str_formatFloat,
+	"str_Format_byte":str_Format_byte,
+	"HasKey":HasKey,
 }
 
 func telegramBot(bot *tgbotapi.BotAPI) {
