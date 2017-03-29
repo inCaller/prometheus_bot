@@ -260,7 +260,9 @@ func main() {
 		*debug = false
 		tmpH = nil
 	}
-	//bot.Debug = true
+    if !debug {
+        gin.SetMode(gin.ReleaseMode)
+    }
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
