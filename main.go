@@ -260,7 +260,7 @@ func main() {
 		*debug = false
 		tmpH = nil
 	}
-    if !debug {
+    if !(*debug) {
         gin.SetMode(gin.ReleaseMode)
     }
 
