@@ -2,7 +2,7 @@ TARGET=prometheus_bot
 
 all: main.go
 	go build -o $(TARGET)
-test:
+test: all
 	prove -v
 clean:
 	go clean
