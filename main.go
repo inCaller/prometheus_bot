@@ -8,13 +8,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"math"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -45,10 +45,10 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken string 	`yaml:"telegram_token"`
-	TemplatePath string 	`yaml:"template_path"`
-	TimeZone string 			`yaml:"template_time_zone"`
-	TimeOutFormat string  `yaml:"template_time_outdata"`
+	TelegramToken string `yaml:"telegram_token"`
+	TemplatePath  string `yaml:"template_path"`
+	TimeZone      string `yaml:"template_time_zone"`
+	TimeOutFormat string `yaml:"template_time_outdata"`
 }
 
 const (
@@ -59,7 +59,6 @@ const (
 	Pb
 	ScaleSize_MAX
 )
-
 
 func RoundPrec(x float64, prec int) float64 {
 	if math.IsNaN(x) || math.IsInf(x, 0) {
@@ -86,8 +85,6 @@ func RoundPrec(x float64, prec int) float64 {
 	return rounder / pow * sign
 }
 
-
-
 /******************************************************************************
  *
  *          Function for formatting template
@@ -107,7 +104,7 @@ func str_Format_byte(in string) string {
 	for j1 < ScaleSize_MAX {
 
 		if f > 1024 {
-		f/=1024.0
+			f /= 1024.0
 		} else {
 
 			switch j1 {
@@ -133,11 +130,10 @@ func str_Format_byte(in string) string {
 }
 
 func str_formatFloat(f string) string {
-		v,_ := strconv.ParseFloat(f, 64)
-		v = RoundPrec(v,2)
-		return strconv.FormatFloat(v, 'f', -1, 64)
+	v, _ := strconv.ParseFloat(f, 64)
+	v = RoundPrec(v, 2)
+	return strconv.FormatFloat(v, 'f', -1, 64)
 }
-
 
 func str_FormatDate(toformat string) string {
 
@@ -165,9 +161,9 @@ func str_FormatDate(toformat string) string {
 	return t.In(loc).Format(cfg.TimeOutFormat)
 }
 
-func HasKey(dict map[string] interface{}, key_search string) bool {
+func HasKey(dict map[string]interface{}, key_search string) bool {
 	if _, ok := dict[key_search]; ok {
-	    return true
+		return true
 	}
 	return false
 }
@@ -184,13 +180,13 @@ var tmpH *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
-	"str_FormatDate" : str_FormatDate,
-	"str_UpperCase":strings.ToUpper,
-	"str_LowerCase":strings.ToLower,
-	"str_Title":strings.Title,
-	"str_formatFloat":str_formatFloat,
-	"str_Format_byte":str_Format_byte,
-	"HasKey":HasKey,
+	"str_FormatDate":  str_FormatDate,
+	"str_UpperCase":   strings.ToUpper,
+	"str_LowerCase":   strings.ToLower,
+	"str_Title":       strings.Title,
+	"str_formatFloat": str_formatFloat,
+	"str_Format_byte": str_Format_byte,
+	"HasKey":          HasKey,
 }
 
 func telegramBot(bot *tgbotapi.BotAPI) {
@@ -260,9 +256,9 @@ func main() {
 		*debug = false
 		tmpH = nil
 	}
-    if !(*debug) {
-        gin.SetMode(gin.ReleaseMode)
-    }
+	if !(*debug) {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
