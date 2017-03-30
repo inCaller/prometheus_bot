@@ -1,0 +1,141 @@
+{
+    "alerts": [{
+        "annotations": {
+            "name": "Load AVG 15 min",
+            "value": "122"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%2215min%22%7D+%3E+%283+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_15MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "15min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Critical"
+        },
+        "startsAt": "2017-01-26T08:31:54.865-05:00"
+    }, {
+        "annotations": {
+            "measureUnit": "kb",
+            "name": "Memory aviable Warning",
+            "value": "3.823976e+06"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_memory%7Bmode%3D%22memavailable%22%7D+%3E+%281024+%2A+100%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "Memory_aviable_Warning",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "memavailable",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Warning"
+        },
+        "startsAt": "2017-01-26T08:14:46.804-05:00"
+    }, {
+        "annotations": {
+            "name": "Heartbeat ❤️",
+            "value": "100"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=100+-+%28avg%28irate%28linux_stats_cpu%7Bmode%3D%22idle%22%7D%5B2m%5D%29%29+BY+%28scada_uuid%29%29+%3E+60\u0026g0.tab=0",
+        "labels": {
+            "alertname": "CPU_Percentage_Worning",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Warning"
+        },
+        "startsAt": "2017-01-26T08:41:06.811-05:00"
+    }, {
+        "annotations": {
+            "name": "Load AVG 1 min",
+            "value": "329"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%221min%22%7D+%3E+%288+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_1MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "1min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Warning"
+        },
+        "startsAt": "2017-01-26T08:29:09.806-05:00"
+    }, {
+        "annotations": {
+            "name": "Load AVG 1 min",
+            "value": "404"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%221min%22%7D+%3E+%2810+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_1MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "1min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Critical"
+        },
+        "startsAt": "2017-01-26T08:31:24.806-05:00"
+    }, {
+        "annotations": {
+            "name": "Load AVG 5 min",
+            "value": "202"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%225min%22%7D+%3E+%285+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_5MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "5min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Warning"
+        },
+        "startsAt": "2017-01-26T08:30:54.806-05:00"
+    }, {
+        "annotations": {
+            "name": "Load AVG 5 min",
+            "value": "327"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%225min%22%7D+%3E+%288+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_5MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "5min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Critical"
+        },
+        "startsAt": "2017-01-26T08:33:51.876-05:00"
+    }, {
+        "annotations": {
+            "name": "Load AVG 15 min",
+            "value": "81"
+        },
+        "sendsAt": "",
+        "generatorURL": "http://localhost.localdomain:9090/graph?g0.expr=linux_loadavg%7Bmode%3D%2215min%22%7D+%3E+%282+%2A+10+%2A+4%29\u0026g0.tab=0",
+        "labels": {
+            "alertname": "LoadAverage_15MIN",
+            "instance": "localhost:9102",
+            "job": "statsd",
+            "mode": "15min",
+            "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23",
+            "severity": "Warning"
+        },
+        "startsAt": "2017-01-26T08:30:00.811-05:00"
+    }],
+    "commonAnnotations": {},
+    "commonLabels": {
+        "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23"
+    },
+    "externalURL": "http://alert.greco.cf/alert-manager",
+    "groupKey": 0,
+    "groupLabels": {
+        "scada_uuid": "483b197c-7fe8-11e6-b772-acb57db47f23"
+    },
+    "receiver": "telegram_bot",
+    "status": "firing",
+    "version": 0
+}
