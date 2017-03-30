@@ -47,8 +47,8 @@ type Alert struct {
 type Config struct {
 	TelegramToken string `yaml:"telegram_token"`
 	TemplatePath  string `yaml:"template_path"`
-	TimeZone      string `yaml:"template_time_zone"`
-	TimeOutFormat string `yaml:"template_time_outdata"`
+	TimeZone      string `yaml:"time_zone"`
+	TimeOutFormat string `yaml:"time_outdata"`
 }
 
 const (
