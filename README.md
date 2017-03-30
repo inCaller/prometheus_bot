@@ -13,19 +13,22 @@ make
 
 ## Usage
 
-1. Create Telegram bot with BotFader, it will return you bot token
+1. Create Telegram bot with BotFader, it will return your bot token
 
-2. Add your bot to a group. It should report group id now, here you find ```CHAT-ID```
-
-3. Specify telegram token in ```config.yaml```:
+2. Specify telegram token in ```config.yaml```:
 
     ```yml
     telegram_token: "token goes here"
-    template_path: "template.tmpl" # ONLY IF YOU USING TEMPLATE
-    time_zone: "Europe/Rome" # ONLY IF YOU USING TEMPLATE
+    # ONLY IF YOU USING TEMPLATE
+
+    template_path: "template.tmpl" 
+    time_zone: "Europe/Rome"
+
+    # ONLY IF YOU USING DATA FORMATTING FUNCTION, NOTE for developer: important or test fail
+    template_time_outdata: "02/01/2006 15:04:05" 
     ```
 
-4. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
+3. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
 
 ### Configuring alert manager
 
@@ -88,7 +91,8 @@ Best way for build your custom template is:
 
 ```-d``` options will enable ```debug``` mode and template file will reload every message, else template is load once on startup.
 
-Is provided as default template file with all possibile variable. Remeber that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
+Is provided as [default template file](testdata/default.tmpl) with all possibile variable.
+Remember that telegram bot support HTML tag. Check [telegram doc here](https://core.telegram.org/bots/api#html-style) for list of aviable tags.
 
 ### Template extra functions
 Template language support many different functions for text, number and data formatting.
