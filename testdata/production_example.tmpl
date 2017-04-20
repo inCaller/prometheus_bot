@@ -17,14 +17,11 @@ Status: <b>{{.Status | str_UpperCase}} ✅</b>
 {{- range $val := .Alerts }}
   Alert: <a href="{{ $val.GeneratorURL }}">{{ index $val.Annotations "name" }}</a>
   Current value:{{if HasKey $val.Annotations "measureUnit" -}}
-  {{ index $val.Annotations "value" | str_Format_byte }}
+  {{str_Format_MeasureUnit (index $val.Annotations "measureUnit") (index $val.Annotations "value")}}
   {{else -}}
-  {{if HasKey $val.Annotations "value"}} 
-  {{ index $val.Annotations "value" | str_formatFloat}}
+  {{if HasKey $val.Annotations "value" -}} 
+  {{ index $val.Annotations "value" | str_FormatFloat}}
   {{end -}}
-  {{end -}}
-  {{if HasKey $val.Labels "mode" -}}
-  Mode:{{ index $val.Labels "mode"}}
   {{end -}}
   {{$severity := index $val.Labels "severity" -}}
   {{if eq $severity "Warning" -}}
