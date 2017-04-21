@@ -49,7 +49,7 @@ type Config struct {
 	TemplatePath  string `yaml:"template_path"`
 	TimeZone      string `yaml:"time_zone"`
 	TimeOutFormat string `yaml:"time_outdata"`
-    SplitChart    string `yaml:"split_token"`
+	SplitChart    string `yaml:"split_token"`
 }
 
 /**
@@ -61,9 +61,9 @@ const (
 	Gb
 	Tb
 	Pb
-    Eb
-    Zb
-    Yb
+	Eb
+	Zb
+	Yb
 	Information_Size_MAX
 )
 
@@ -71,15 +71,15 @@ const (
  * Subdivided by 10000
  */
 const (
-    K = iota
-    M
-    G
-    T
-    P
-    E
-    Z
-    Y
-    Scale_Size_MAX
+	K = iota
+	M
+	G
+	T
+	P
+	E
+	Z
+	Y
+	Scale_Size_MAX
 )
 
 func RoundPrec(x float64, prec int) float64 {
@@ -113,34 +113,44 @@ func RoundPrec(x float64, prec int) float64 {
  *
  ******************************************************************************/
 func str_Format_MeasureUnit(MeasureUnit string, value string) string {
-    var RetStr string
+	var RetStr string
 
-    MeasureUnit = strings.TrimSpace(MeasureUnit)// Remove space
-    SplittedMUnit := strings.SplitN(MeasureUnit,cfg.SplitChart,2)
+	MeasureUnit = strings.TrimSpace(MeasureUnit) // Remove space
+	SplittedMUnit := strings.SplitN(MeasureUnit, cfg.SplitChart, 3)
 
-    switch SplittedMUnit[0] {
-    case "kb":
-        RetStr = str_Format_byte(value)
-    case "s":
-        RetStr = str_Format_Scale(value)
-    case "f":
-        RetStr = str_FormatFloat(value)
-    case "i":
-        RetStr = str_FormatInt(value)
-    default:
-        RetStr = str_FormatInt(value)
-    }
+	Initial := 0
+	// If is declared third part of array, then Measure unit start from just scaled measure unit.
+	// Example Kg is Kilo g, but all people use Kg not g, then you will put here 3 Kilo. Bot strart convert from here.
+	if len(SplittedMUnit) > 2 {
+		tmp, err := strconv.ParseInt(SplittedMUnit[2], 10, 8)
+		if err != nil {
+			log.Println("Could not convert value to int")
+		}
+		Initial = int(tmp)
+	}
 
-    if len(SplittedMUnit)>1 {
-        RetStr += SplittedMUnit[1]
-    }
+	switch SplittedMUnit[0] {
+	case "kb":
+		RetStr = str_Format_Byte(value, Initial)
+	case "s":
+		RetStr = str_Format_Scale(value, Initial)
+	case "f":
+		RetStr = str_FormatFloat(value)
+	case "i":
+		RetStr = str_FormatInt(value)
+	default:
+		RetStr = str_FormatInt(value)
+	}
 
-    return RetStr
+	if len(SplittedMUnit) > 1 {
+		RetStr += SplittedMUnit[1]
+	}
+
+	return RetStr
 }
 
 // Scale number for It measure unit
-func str_Format_byte(in string) string {
-	var j1 int
+func str_Format_Byte(in string, j1 int) string {
 	var str_Size string
 
 	f, err := strconv.ParseFloat(in, 64)
@@ -149,12 +159,12 @@ func str_Format_byte(in string) string {
 		panic(err)
 	}
 
-	for j1=0;j1<(Information_Size_MAX+1);j1++ {
+	for j1 = 0; j1 < (Information_Size_MAX + 1); j1++ {
 
-        if j1>=Information_Size_MAX {
-            str_Size = "Yb"
-            break
-        } else if f > 1024 {
+		if j1 >= Information_Size_MAX {
+			str_Size = "Yb"
+			break
+		} else if f > 1024 {
 			f /= 1024.0
 		} else {
 
@@ -169,11 +179,11 @@ func str_Format_byte(in string) string {
 				str_Size = "Tb"
 			case Pb:
 				str_Size = "Pb"
-            case Eb:
+			case Eb:
 				str_Size = "Eb"
-            case Zb:
+			case Zb:
 				str_Size = "Zb"
-            case Yb:
+			case Yb:
 				str_Size = "Yb"
 			}
 			break
@@ -183,9 +193,9 @@ func str_Format_byte(in string) string {
 	str_fl := strconv.FormatFloat(f, 'f', 2, 64)
 	return fmt.Sprintf("%s %s", str_fl, str_Size)
 }
+
 // Format number for fisics measure unit
-func str_Format_Scale(in string) string {
-	var j1 int
+func str_Format_Scale(in string, j1 int) string {
 	var str_Size string
 
 	f, err := strconv.ParseFloat(in, 64)
@@ -194,12 +204,12 @@ func str_Format_Scale(in string) string {
 		panic(err)
 	}
 
-	for j1=0;j1<(Scale_Size_MAX+1);j1++ {
+	for j1 = 0; j1 < (Scale_Size_MAX + 1); j1++ {
 
-	    if j1 >= Scale_Size_MAX {
-            str_Size = "Y"
-            break
-        } else if f > 1000 {
+		if j1 >= Scale_Size_MAX {
+			str_Size = "Y"
+			break
+		} else if f > 1000 {
 			f /= 1000.0
 		} else {
 			switch j1 {
@@ -213,14 +223,14 @@ func str_Format_Scale(in string) string {
 				str_Size = "T"
 			case P:
 				str_Size = "P"
-            case E:
-                str_Size = "E"
-            case Z:
-                str_Size = "Z"
-            case Y:
-                str_Size = "Y"
-            default:
-                str_Size = "Y"
+			case E:
+				str_Size = "E"
+			case Z:
+				str_Size = "Z"
+			case Y:
+				str_Size = "Y"
+			default:
+				str_Size = "Y"
 			}
 			break
 		}
@@ -231,9 +241,9 @@ func str_Format_Scale(in string) string {
 }
 
 func str_FormatInt(i string) string {
-	v, _ := strconv.ParseInt(i,10,64)
-    val := strconv.FormatInt(v,10)
-    return val
+	v, _ := strconv.ParseInt(i, 10, 64)
+	val := strconv.FormatInt(v, 10)
+	return val
 }
 
 func str_FormatFloat(f string) string {
@@ -287,12 +297,14 @@ var tmpH *template.Template
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
-	"str_FormatDate":  str_FormatDate,
-	"str_UpperCase":   strings.ToUpper,
-	"str_LowerCase":   strings.ToLower,
-	"str_Title":       strings.Title,
-    "str_Format_MeasureUnit": str_Format_MeasureUnit,
-	"HasKey":          HasKey,
+	"str_FormatDate":         str_FormatDate,
+	"str_UpperCase":          strings.ToUpper,
+	"str_LowerCase":          strings.ToLower,
+	"str_Title":              strings.Title,
+	"str_FormatFloat":        str_FormatFloat,
+	"str_Format_Byte":        str_Format_Byte,
+	"str_Format_MeasureUnit": str_Format_MeasureUnit,
+	"HasKey":                 HasKey,
 }
 
 func telegramBot(bot *tgbotapi.BotAPI) {

@@ -19,10 +19,11 @@ make
 
     ```yml
     telegram_token: "token goes here"
-    # ONLY IF YOU USING TEMPLATE
+    # ONLY IF YOU USING TEMPLATE required for test
 
     template_path: "template.tmpl" 
     time_zone: "Europe/Rome"
+    split_token: "|"    
 
     # ONLY IF YOU USING DATA FORMATTING FUNCTION, NOTE for developer: important or test fail
     template_time_outdata: "02/01/2006 15:04:05" 
