@@ -77,7 +77,8 @@ For enable template you must set this two settings in your ```config.yaml``` or 
 ```yml
 telegram_token: "token here"
 template_path: "template.tmpl" # your template file name
-time_zone: "Europe/Rome" # yor time zone check it out from WIKI
+time_zone: "Europe/Rome" # your time zone check it out from WIKI
+split_token: "|" # token used for split measure label.
 ```
 
 You can also pass template path with `-t` command line argument, it has higher priority than the config option.
@@ -103,10 +104,11 @@ Template language support many different functions for text, number and data for
 -   ```str_UpperCase```: Convert string to uppercase
 -   ```str_LowerCase```: Convert string to lowercase
 -   ```str_Title```: Convert string in Title, "title" --> "Title" fist letter become Uppercase
--   ```str_Format_byte```: Convert number expressed in ```Byte``` to number in related measure unit. It use ```strconv.ParseFloat(..., 64)``` take look at go related doc for possible input format, usually every think '35.95e+06' is correct converted.
+-   DEPRECATED  ```str_Format_Byte```: Convert number expressed in ```Byte``` to number in related measure unit. It use ```strconv.ParseFloat(..., 64)``` take look at go related doc for possible input format, usually every think '35.95e+06' is correct converted.
 Example:
     -    35'000'000 [Kb] will converter to '35 Gb'
     -    89'000 [Kb] will converter to '89 Mb'
+-   ```str_Format_MeasureUnit```: Convert string to scaled number and add append measure unit label. For add measure unit label you could add it in prometheus alerting rule. Example of working: 8*e10 become 80G. You cuold also start from a different scale, example kilo:"s|g|3". Check production example for complete implemetation. Require ```split_token: "|"``` in conf.yaml
 -   ```HasKey```: Param:dict map, key_search string Search in map if there requeted key
 
 -    ```str_FormatDate```: Convert prometheus string date in your preferred date time format, config file param ```time_outdata``` could be used for setup your favourite format
@@ -124,6 +126,6 @@ Production example contains a example of how could be a real template.
 ```testdata/production_example.json```
 ```testdata/production_example.tmpl```
 
-It could be a base, for build a real tempalte, or simply copy some part.
-Sysadmin usually love copy other from just done.
+It could be a base, for build a real tempalte, or simply copy some part, check-out how to use functions.
+Sysadmin usually love copy.
 
