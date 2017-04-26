@@ -125,6 +125,10 @@ func str_Format_MeasureUnit(MeasureUnit string, value string) string {
 		tmp, err := strconv.ParseInt(SplittedMUnit[2], 10, 8)
 		if err != nil {
 			log.Println("Could not convert value to int")
+			if !*debug {
+				// If is running in production leave daemon live. else here will die with log error.
+				return "" // Break execution and return void string, bot will log somethink
+			}
 		}
 		Initial = int(tmp)
 	}
