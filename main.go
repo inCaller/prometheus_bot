@@ -114,7 +114,7 @@ func RoundPrec(x float64, prec int) float64 {
  ******************************************************************************/
 func str_Format_MeasureUnit(MeasureUnit string, value string) string {
 	var RetStr string
-
+	cfg.SplitChart = "|"
 	MeasureUnit = strings.TrimSpace(MeasureUnit) // Remove space
 	SplittedMUnit := strings.SplitN(MeasureUnit, cfg.SplitChart, 3)
 
