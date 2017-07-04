@@ -26,7 +26,7 @@ make
     split_token: "|"    
 
     # ONLY IF YOU USING DATA FORMATTING FUNCTION, NOTE for developer: important or test fail
-    template_time_outdata: "02/01/2006 15:04:05" 
+    time_outdata: "02/01/2006 15:04:05" 
     ```
 
 3. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
@@ -118,8 +118,8 @@ Example:
 -    ```str_FormatDate```: Convert prometheus string date in your preferred date time format, config file param ```time_outdata``` could be used for setup your favourite format
 Require more setting in your cofig.yaml
 ```yaml
-template_time_zone: "Europe/Rome"
-template_time_outdata: "02/01/2006 15:04:05"
+time_zone: "Europe/Rome"
+time_outdata: "02/01/2006 15:04:05"
 ```
 [WIKI List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
