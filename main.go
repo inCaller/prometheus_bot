@@ -269,9 +269,7 @@ func str_FormatDate(toformat string) string {
 		panic(nil)
 	}
 
-	IN_layout := "2006-01-02T15:04:05.000-07:00"
-
-	t, err := time.Parse(IN_layout, toformat)
+	t, err := time.Parse(time.RFC3339Nano, toformat)
 
 	if err != nil {
 		fmt.Println(err)
