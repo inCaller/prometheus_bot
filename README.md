@@ -23,7 +23,7 @@ make
     ```
 
 2. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
-3. Add your bot to a group. It should report group id now
+3. Add your bot to a group. It should report group id now. You can also send a message starting with `\`. Bot should reply to with chat ID to any message in a personal chat.
 
 ### Configuring alertmanager
 
@@ -62,9 +62,9 @@ TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID" make test
 ## Customizing messages with template
 
 This bot support [go templating language](https://golang.org/pkg/text/template/).
-Use it for customizing your message.
+Use it for customising your message.
 
-For enable template you must set this two settings in your ```config.yaml``` or template will skip.
+For enable template you have to set this two settings in your ```config.yaml``` or template will skip.
 ```yml
 template_path: "template.tmpl" # your template file name
 time_zone: "Europe/Rome" # yor time zone check it out from WIKI
@@ -82,4 +82,4 @@ Best way for build your custom template is:
 
 ```-d``` options will enable ```debug``` mode and template file will reload every message, else template is load once on startup.
 
-Is provided as [default template file](testdata/default.tmpl) with all possibile variable. Remember that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of aviable tags.
+Is provided as [default template file](testdata/default.tmpl) with all possibile variable. Remember that telegram bot support HTML check [here](https://core.telegram.org/bots/api#html-style) list of available tags.

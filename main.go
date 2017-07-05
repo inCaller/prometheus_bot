@@ -166,7 +166,7 @@ func main() {
 }
 
 func GET_Handling(c *gin.Context) {
-	log.Printf("Recived GET")
+	log.Printf("Received GET")
 	chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
 	if err != nil {
 		log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
