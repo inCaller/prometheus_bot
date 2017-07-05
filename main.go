@@ -86,12 +86,20 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 		log.Fatal(err)
 	}
 
+	introduce := func(update tgbotapi.Update) {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
+		bot.Send(msg)
+	}
+
 	for update := range updates {
-		if update.Message.NewChatMember != nil {
-			if update.Message.NewChatMember.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
-				bot.Send(msg)
+		if update.Message.NewChatMembers != nil && len(*update.Message.NewChatMembers) > 0 {
+			for _, member := range *update.Message.NewChatMembers {
+				if member.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
+					introduce(update)
+				}
 			}
+		} else if update.Message != nil && update.Message.Text != "" {
+			introduce(update)
 		}
 	}
 }
