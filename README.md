@@ -64,7 +64,7 @@ TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID" make test
 This bot support [go templating language](https://golang.org/pkg/text/template/).
 Use it for customising your message.
 
-For enable template you have to set this two settings in your ```config.yaml``` or template will skip.
+For enable template you have to set these two settings in your ```config.yaml``` or template will skip.
 ```yml
 template_path: "template.tmpl" # your template file name
 time_zone: "Europe/Rome" # yor time zone check it out from WIKI
