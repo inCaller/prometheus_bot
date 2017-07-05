@@ -30,6 +30,9 @@ make
     ```
 
 3. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
+3. Get chat ID with one of two ways
+    1. Start conversation, send message to bot mentioning it
+    2. Add your bot to a group. It should report group id now. To get ID of a group if bot is already a member [send a message that starts with `/`](https://core.telegram.org/bots#privacy-mode)
 
 ### Configuring alert manager
 
@@ -68,12 +71,13 @@ or
 TELEGRAM_CHATID="-YOUR TELEGRAM CHAT ID" make test
 ```
 
-## Customizing messages with template
+## Customising messages with template
 
 This bot support [go templating language](https://golang.org/pkg/text/template/).
-Use it for customizing your message.
+Use it for customising your message.
 
-For enable template you must set this two settings in your ```config.yaml``` or template will skip.
+To enable template set these settings in your ```config.yaml``` or template will be skipped.
+
 ```yml
 telegram_token: "token here"
 template_path: "template.tmpl" # your template file name
@@ -108,7 +112,7 @@ Template language support many different functions for text, number and data for
 Example:
     -    35'000'000 [Kb] will converter to '35 Gb'
     -    89'000 [Kb] will converter to '89 Mb'
--   ```str_Format_MeasureUnit```: Convert string to scaled number and add append measure unit label. For add measure unit label you could add it in prometheus alerting rule. Example of working: 8*e10 become 80G. You cuold also start from a different scale, example kilo:"s|g|3". Check production example for complete implemetation. Require ```split_token: "|"``` in conf.yaml
+-   ```str_Format_MeasureUnit```: Convert string to scaled number and add append measure unit label. For add measure unit label you could add it in prometheus alerting rule. Example of working: 8*e10 become 80G. You cuold also start from a different scale, example kilo:"s|g|3". Check production example for complete implementation. Require ```split_token: "|"``` in conf.yaml
 -   ```HasKey```: Param:dict map, key_search string Search in map if there requeted key
 
 -    ```str_FormatDate```: Convert prometheus string date in your preferred date time format, config file param ```time_outdata``` could be used for setup your favourite format
