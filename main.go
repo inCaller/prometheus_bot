@@ -349,6 +349,14 @@ func loadTemplate(tmplPath string) *template.Template {
 	return tmpH
 }
 
+func CutString(s string, i int) string {
+	runes := []rune(s)
+	if len(runes) > i {
+		return string(runes[:i])
+	}
+	return s
+}
+
 func main() {
 	flag.Parse()
 
@@ -545,7 +553,7 @@ func POST_Handling(c *gin.Context) {
 	log.Println(msgtext)
 	log.Println("+-----------------------------------------------------------+")
 
-	msg := tgbotapi.NewMessage(chatid, msgtext)
+	msg := tgbotapi.NewMessage(chatid, CutString(msgtext, 4096))
 	msg.ParseMode = tgbotapi.ModeHTML
 
 	msg.DisableWebPagePreview = true
