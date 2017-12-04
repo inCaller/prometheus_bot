@@ -45,11 +45,12 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken string `yaml:"telegram_token"`
-	TemplatePath  string `yaml:"template_path"`
-	TimeZone      string `yaml:"time_zone"`
-	TimeOutFormat string `yaml:"time_outdata"`
-	SplitChart    string `yaml:"split_token"`
+	TelegramToken     string `yaml:"telegram_token"`
+	TemplatePath      string `yaml:"template_path"`
+	TimeZone          string `yaml:"time_zone"`
+	TimeOutFormat     string `yaml:"time_outdata"`
+	SplitChart        string `yaml:"split_token"`
+	SplitMessageBytes int    `yaml:"split_msg_byte"`
 }
 
 /**
@@ -349,12 +350,23 @@ func loadTemplate(tmplPath string) *template.Template {
 	return tmpH
 }
 
-func CutString(s string, i int) string {
-	runes := []rune(s)
-	if len(runes) > i {
-		return string(runes[:i])
+func SplitString(s string, n int) []string {
+	sub := ""
+	subs := []string{}
+
+	runes := bytes.Runes([]byte(s))
+	l := len(runes)
+	for i, r := range runes {
+		sub = sub + string(r)
+		if (i+1)%n == 0 {
+			subs = append(subs, sub)
+			sub = ""
+		} else if (i + 1) == l {
+			subs = append(subs, sub)
+		}
 	}
-	return s
+
+	return subs
 }
 
 func main() {
@@ -371,6 +383,10 @@ func main() {
 
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
+	}
+
+	if cfg.SplitMessageBytes == 0 {
+		cfg.SplitMessageBytes = 4000
 	}
 
 	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
@@ -548,27 +564,30 @@ func POST_Handling(c *gin.Context) {
 	} else {
 		msgtext = AlertFormatTemplate(alerts)
 	}
-	// Print in Log result message
-	log.Println("+---------------  F I N A L   M E S S A G E  ---------------+")
-	log.Println(msgtext)
-	log.Println("+-----------------------------------------------------------+")
+	for _, subString := range SplitString(msgtext, cfg.SplitMessageBytes) {
+		msg := tgbotapi.NewMessage(chatid, subString)
+		msg.ParseMode = tgbotapi.ModeHTML
 
-	msg := tgbotapi.NewMessage(chatid, CutString(msgtext, 4096))
-	msg.ParseMode = tgbotapi.ModeHTML
+		// Print in Log result message
+		log.Println("+---------------  F I N A L   M E S S A G E  ---------------+")
+		log.Println(subString)
+		log.Println("+-----------------------------------------------------------+")
 
-	msg.DisableWebPagePreview = true
+		msg.DisableWebPagePreview = true
 
-	sendmsg, err := bot.Send(msg)
-	if err == nil {
-		c.String(http.StatusOK, "telegram msg sent.")
-	} else {
-		log.Printf("Error sending message: %s", err)
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"err":     fmt.Sprint(err),
-			"message": sendmsg,
-			"srcmsg":  fmt.Sprint(msgtext),
-		})
-		msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
-		bot.Send(msg)
+		sendmsg, err := bot.Send(msg)
+		if err == nil {
+			c.String(http.StatusOK, "telegram msg sent.")
+		} else {
+			log.Printf("Error sending message: %s", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"err":     fmt.Sprint(err),
+				"message": sendmsg,
+				"srcmsg":  fmt.Sprint(msgtext),
+			})
+			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
+			bot.Send(msg)
+		}
 	}
+
 }
