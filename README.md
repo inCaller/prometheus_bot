@@ -13,7 +13,7 @@ make
 
 ## Usage
 
-1. Create Telegram bot with BotFader, it will return your bot token
+1. Create Telegram bot with [BotFather](https://t.me/BotFather), it will return your bot token
 
 2. Specify telegram token in ```config.yaml```:
 
