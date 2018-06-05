@@ -42,6 +42,7 @@ type Alert struct {
 	GeneratorURL string                 `json:"generatorURL"`
 	Labels       map[string]interface{} `json:"labels"`
 	StartsAt     string                 `json:"startsAt"`
+	Duration		 time.Duration
 }
 
 type Config struct {
@@ -547,6 +548,19 @@ func POST_Handling(c *gin.Context) {
 	}
 
 	binding.JSON.Bind(c.Request, &alerts)
+
+	for index, _ := range alerts.Alerts {
+		layout := "2006-01-02T15:04:05.000000000Z"
+		startsAt_time, err := time.Parse(layout, alerts.Alerts[index].StartsAt)
+		if err != nil {
+			log.Print(err)
+		}
+		endsAt_time, err := time.Parse(layout, alerts.Alerts[index].EndsAt)
+		if err != nil {
+			log.Print(err)
+		}
+		alerts.Alerts[index].Duration = endsAt_time.Sub(startsAt_time)
+	}
 
 	s, err := json.Marshal(alerts)
 	if err != nil {
