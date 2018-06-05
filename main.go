@@ -42,7 +42,7 @@ type Alert struct {
 	GeneratorURL string                 `json:"generatorURL"`
 	Labels       map[string]interface{} `json:"labels"`
 	StartsAt     string                 `json:"startsAt"`
-	Duration		 time.Duration
+	Duration     time.Duration
 }
 
 type Config struct {
