@@ -558,7 +558,7 @@ func POST_Handling(c *gin.Context) {
 		if err != nil {
 			log.Print(err)
 		}
-		alerts.Alerts[index].Duration = endsAt_time.Sub(startsAt_time)
+		alerts.Alerts[index].Duration = endsAt_time.Sub(startsAt_time).Truncate(time.Second)
 	}
 
 	s, err := json.Marshal(alerts)
