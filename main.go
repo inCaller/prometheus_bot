@@ -320,10 +320,10 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 		log.Fatal(err)
 	}
 
-	introduce := func(update tgbotapi.Update) {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
-		bot.Send(msg)
-	}
+	//introduce := func(update tgbotapi.Update) {
+//		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
+//		bot.Send(msg)
+//	}
 
 	for update := range updates {
 		if update.Message.NewChatMembers != nil && len(*update.Message.NewChatMembers) > 0 {
