@@ -18,7 +18,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
 
 	"html/template"
@@ -325,6 +325,13 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 	}
 
 	for update := range updates {
+		if update.Message == nil {
+			if *debug {
+				log.Printf("[UNKNOWN_MESSAGE] [%v]", update)
+			}
+			continue
+		}
+
 		if update.Message.NewChatMembers != nil && len(*update.Message.NewChatMembers) > 0 {
 			for _, member := range *update.Message.NewChatMembers {
 				if member.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
@@ -395,6 +402,9 @@ func main() {
 	}
 
 	bot = bot_tmp
+	if *debug {
+		bot.Debug = true
+	}
 	if cfg.TemplatePath != "" {
 
 		tmpH = loadTemplate(cfg.TemplatePath)
