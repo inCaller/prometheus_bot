@@ -131,6 +131,6 @@ Production example contains a example of how could be a real template.
 ```testdata/production_example.json```
 ```testdata/production_example.tmpl```
 
-It could be a base, for build a real tempalte, or simply copy some part, check-out how to use functions.
+It could be a base, for build a real template, or simply copy some part, check-out how to use functions.
 Sysadmin usually love copy.
 
