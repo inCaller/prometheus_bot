@@ -45,13 +45,13 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken     string `yaml:"telegram_token"`
-	TemplatePath      string `yaml:"template_path"`
+	TelegramToken     string            `yaml:"telegram_token"`
+	TemplatePath      string            `yaml:"template_path"`
 	MultipleTemplates map[string]string `yaml:"multiple_templates,omitempty"`
-	TimeZone          string `yaml:"time_zone"`
-	TimeOutFormat     string `yaml:"time_outdata"`
-	SplitChart        string `yaml:"split_token"`
-	SplitMessageBytes int    `yaml:"split_msg_byte"`
+	TimeZone          string            `yaml:"time_zone"`
+	TimeOutFormat     string            `yaml:"time_outdata"`
+	SplitChart        string            `yaml:"split_token"`
+	SplitMessageBytes int               `yaml:"split_msg_byte"`
 }
 
 /**
@@ -297,7 +297,7 @@ var debug = flag.Bool("d", false, "Debug template")
 
 var cfg = Config{}
 var bot *tgbotapi.BotAPI
-var tmpS map[string]*template.Template
+var tmpS = make(map[string]*template.Template)
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
@@ -399,7 +399,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing configuration file: %v", err)
 	}
-
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
 	}
@@ -545,7 +544,7 @@ func AlertFormatTemplate(alerts Alerts, chatID string) string {
 }
 
 func templateChoose(chatid string) *template.Template {
-	tpl , exists := tmpS[chatid]
+	tpl, exists := tmpS[chatid]
 	if !exists {
 		return tmpS["default"]
 	}
