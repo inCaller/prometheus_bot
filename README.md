@@ -22,6 +22,10 @@ make
     # ONLY IF YOU USING TEMPLATE required for test
 
     template_path: "template.tmpl" 
+    # OPTIONAL TEMPLATES FOR DIFFERENT CHART
+    # map[chatid]templatepath
+    multiple_teplates: 
+      -12138679618923: "template-extra.tmpl" ##
     time_zone: "Europe/Rome"
     split_token: "|"    
 
@@ -82,6 +86,8 @@ To enable template set these settings in your ```config.yaml``` or template will
 ```yml
 telegram_token: "token here"
 template_path: "template.tmpl" # your template file name
+multiple_teplates:  #if you want to specify different templates for different chats
+  -12138679618923: "template-extra.tmpl"
 time_zone: "Europe/Rome" # your time zone check it out from WIKI
 split_token: "|" # token used for split measure label.
 ```
