@@ -1,3 +1,4 @@
 prometheus_bot
 bot.log
+*.tmpl
 config.yaml
