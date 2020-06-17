@@ -1,4 +1,4 @@
-FROM golang:1.10.3-alpine3.7 as builder
+FROM golang:1.11-alpine3.7 as builder
 RUN \
     cd / && \
     apk update && \

@@ -45,12 +45,13 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken     string `yaml:"telegram_token"`
-	TemplatePath      string `yaml:"template_path"`
-	TimeZone          string `yaml:"time_zone"`
-	TimeOutFormat     string `yaml:"time_outdata"`
-	SplitChart        string `yaml:"split_token"`
-	SplitMessageBytes int    `yaml:"split_msg_byte"`
+	TelegramToken     string            `yaml:"telegram_token"`
+	TemplatePath      string            `yaml:"template_path"`
+	MultipleTemplates map[string]string `yaml:"multiple_templates,omitempty"`
+	TimeZone          string            `yaml:"time_zone"`
+	TimeOutFormat     string            `yaml:"time_outdata"`
+	SplitChart        string            `yaml:"split_token"`
+	SplitMessageBytes int               `yaml:"split_msg_byte"`
 }
 
 /**
@@ -296,7 +297,7 @@ var debug = flag.Bool("d", false, "Debug template")
 
 var cfg = Config{}
 var bot *tgbotapi.BotAPI
-var tmpH *template.Template
+var tmpS = make(map[string]*template.Template)
 
 // Template addictional functions map
 var funcMap = template.FuncMap{
@@ -346,7 +347,7 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 
 func loadTemplate(tmplPath string) *template.Template {
 	// let's read template
-	tmpH, err := template.New(path.Base(tmplPath)).Funcs(funcMap).ParseFiles(cfg.TemplatePath)
+	tmpH, err := template.New(path.Base(tmplPath)).Funcs(funcMap).ParseFiles(tmplPath)
 
 	if err != nil {
 		log.Fatalf("Problem reading parsing template file: %v", err)
@@ -376,6 +377,17 @@ func SplitString(s string, n int) []string {
 	return subs
 }
 
+func makeTemplateMap() {
+	if cfg.TemplatePath != "" {
+		tmpS["default"] = loadTemplate(cfg.TemplatePath)
+	}
+	if cfg.MultipleTemplates != nil {
+		for chatid, tmplPath := range cfg.MultipleTemplates {
+			tmpS[chatid] = loadTemplate(tmplPath)
+		}
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -387,7 +399,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing configuration file: %v", err)
 	}
-
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
 	}
@@ -395,6 +406,7 @@ func main() {
 	if cfg.SplitMessageBytes == 0 {
 		cfg.SplitMessageBytes = 4000
 	}
+	makeTemplateMap()
 
 	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
@@ -405,18 +417,9 @@ func main() {
 	if *debug {
 		bot.Debug = true
 	}
-	if cfg.TemplatePath != "" {
-
-		tmpH = loadTemplate(cfg.TemplatePath)
-
-		if cfg.TimeZone == "" {
-			log.Fatalf("You must define time_zone of your bot")
-			panic(-1)
-		}
-
-	} else {
-		*debug = false
-		tmpH = nil
+	if cfg.TimeZone == "" {
+		log.Fatalf("You must define time_zone of your bot")
+		panic(-1)
 	}
 	if !(*debug) {
 		gin.SetMode(gin.ReleaseMode)
@@ -517,7 +520,7 @@ func AlertFormatStandard(alerts Alerts) string {
 	)
 }
 
-func AlertFormatTemplate(alerts Alerts) string {
+func AlertFormatTemplate(alerts Alerts, chatID string) string {
 	var bytesBuff bytes.Buffer
 	var err error
 
@@ -525,12 +528,12 @@ func AlertFormatTemplate(alerts Alerts) string {
 
 	if *debug {
 		log.Printf("Reloading Template\n")
-		// reload template bacause we in debug mode
-		tmpH = loadTemplate(cfg.TemplatePath)
+		// reload template because we in debug mode
+		makeTemplateMap()
 	}
-
-	tmpH.Funcs(funcMap)
-	err = tmpH.Execute(writer, alerts)
+	tpl := templateChoose(chatID)
+	tpl.Funcs(funcMap)
+	err = tpl.Execute(writer, alerts)
 
 	if err != nil {
 		log.Fatalf("Problem with template execution: %v", err)
@@ -538,6 +541,14 @@ func AlertFormatTemplate(alerts Alerts) string {
 	}
 
 	return bytesBuff.String()
+}
+
+func templateChoose(chatid string) *template.Template {
+	tpl, exists := tmpS[chatid]
+	if !exists {
+		return tmpS["default"]
+	}
+	return tpl
 }
 
 func POST_Handling(c *gin.Context) {
@@ -572,7 +583,7 @@ func POST_Handling(c *gin.Context) {
 	if cfg.TemplatePath == "" {
 		msgtext = AlertFormatStandard(alerts)
 	} else {
-		msgtext = AlertFormatTemplate(alerts)
+		msgtext = AlertFormatTemplate(alerts, c.Param("chatid"))
 	}
 	for _, subString := range SplitString(msgtext, cfg.SplitMessageBytes) {
 		msg := tgbotapi.NewMessage(chatid, subString)
