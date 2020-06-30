@@ -24,3 +24,25 @@ jobs:
 
       - name: Run hadolint.
         run: hadolint --ignore DL3003 --ignore DL3018 Dockerfile
+
+  build:
+    name: Build and test docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Build docker image.
+        run: docker build --no-cache --tag ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID} .
+
+      - name: Run a container of created image.
+        run: |
+          DOCKERCONTAINER=$(docker run -d ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID})
+          sleep 5
+          echo "DOCKERCONTAINER=$DOCKERCONTAINER" >> $GITHUB_ENV
+
+      - name: Check if container is still running.
+        run: docker ps -f id=${DOCKERCONTAINER}
+
+      - name: Check if the container is correctly stopped and removed.
+        run: docker stop ${DOCKERCONTAINER} && docker rm -fv ${DOCKERCONTAINER}
