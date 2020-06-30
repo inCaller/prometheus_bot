@@ -19,7 +19,7 @@ script:
 - DOCKERCONTAINER=$(docker run -d aminvakil/prometheus_bot:${TRAVIS_COMMIT})
 - sleep 10
 - docker ps -f id=${DOCKERCONTAINER}
-- hadolint Dockerfile
+- hadolint --ignore DL3003 --ignore DL3018 Dockerfile
 after_success:
 - docker stop ${DOCKERCONTAINER} && docker rm -fv ${DOCKERCONTAINER}
 - echo "$DOCKER_PASSWORD" | docker login -u aminvakil --password-stdin
