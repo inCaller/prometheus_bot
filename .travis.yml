@@ -23,4 +23,4 @@ script:
 after_success:
 - docker stop ${DOCKERCONTAINER} && docker rm -fv ${DOCKERCONTAINER}
 - echo "$DOCKER_PASSWORD" | docker login -u aminvakil --password-stdin
-- docker push aminvakil/prometheus_bot
+- docker push aminvakil/prometheus_bot:latest
