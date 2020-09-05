@@ -22,6 +22,6 @@ script:
 - hadolint --ignore DL3003 --ignore DL3018 Dockerfile
 - docker stop ${DOCKERCONTAINER} && docker rm -fv ${DOCKERCONTAINER}
 after_success:
-- docker tag aminvakil/prometheus_bot:${TRAVIS_COMMIT} aminvakil/prometheus_bot
-- echo "$DOCKER_PASSWORD" | docker login -u aminvakil --password-stdin
-- docker push aminvakil/prometheus_bot:latest
+- docker tag aminvakil/prometheus_bot:${TRAVIS_COMMIT} quay.io/aminvakil/prometheus_bot
+- docker login quay.io -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD"
+- docker push quay.io/aminvakil/prometheus_bot
