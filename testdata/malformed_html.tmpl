@@ -1,0 +1,40 @@
+<b>This HTML is malformed: some tags a not closed
+{{ $length := len .GroupLabels -}} {{ if ne $length 0 }}
+<b>Grouped for:</b>
+{{ range $key,$val := .GroupLabels -}}
+    {{$key}} = <code>{{$val}}</code>
+{{ end -}}
+{{ end -}}
+
+{{if eq .Status "firing"}}
+Status: <b>{{.Status | str_UpperCase}} 🔥</b>
+{{end -}}
+
+{{if eq .Status "resolved"}}
+Status: <b>{{.Status | str_UpperCase}} ✅</b>
+{{end }}
+<b>Active Alert List:</b>
+{{- range $val := .Alerts }}
+  Alert: <a href="{{ $val.GeneratorURL }}">{{ index $val.Annotations "name" }}
+  Current value:{{if HasKey $val.Annotations "measureUnit" -}}
+  {{str_Format_MeasureUnit (index $val.Annotations "measureUnit") (index $val.Annotations "value")}}
+  {{else -}}
+  {{if HasKey $val.Annotations "value" -}} 
+  {{ index $val.Annotations "value" | str_FormatFloat}}
+  {{end -}}
+  {{end -}}
+  {{$severity := index $val.Labels "severity" -}}
+  {{if eq $severity "Warning" -}}
+  Severity: {{$severity}} ⚠️
+  {{else if eq $severity "Critical" -}}
+  Severity: {{$severity}} 🚨
+  {{else -}}
+  Severity: {{$severity}}
+  {{ end -}}
+  Active from: {{ $val.StartsAt | str_FormatDate }}
+  {{ range $key, $value := $val.Annotations -}}
+  {{ if and (and (ne $key "name") (ne $key "value")) (ne $key "measureUnit") }}
+  {{$key}}: {{$value}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
