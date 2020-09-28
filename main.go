@@ -3,6 +3,7 @@ package main // import "github.com/inCaller/prometheus_bot"
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
@@ -16,12 +17,14 @@ import (
 	"strings"
 	"time"
 
+	"html/template"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/microcosm-cc/bluemonday"
 	"gopkg.in/telegram-bot-api.v4"
-	"gopkg.in/yaml.v2"
 
-	"html/template"
+	"gopkg.in/yaml.v2"
 )
 
 type Alerts struct {
@@ -540,6 +543,39 @@ func AlertFormatTemplate(alerts Alerts) string {
 	return bytesBuff.String()
 }
 
+// SanitizeMsg check string for HTML validity and
+// strips all HTML tags if it not valid
+func SanitizeMsg(str string) string {
+	r := strings.NewReader(str)
+	d := xml.NewDecoder(r)
+
+	d.Strict = false
+	d.AutoClose = xml.HTMLAutoClose
+	d.Entity = xml.HTMLEntity
+	exitParser := false
+	for {
+		_, err := d.Token()
+		switch err {
+		case io.EOF:
+			log.Println("HTML is valid, sending it...")
+			exitParser = true
+			break
+		case nil:
+		default:
+			log.Println("HTML is not valid, strip all tags to prevent error")
+			p := bluemonday.StrictPolicy()
+			str = p.Sanitize(str)
+			exitParser = true
+			break
+		}
+		if exitParser {
+			break
+		}
+	}
+
+	return str
+}
+
 func POST_Handling(c *gin.Context) {
 	var msgtext string
 	var alerts Alerts
@@ -575,7 +611,10 @@ func POST_Handling(c *gin.Context) {
 		msgtext = AlertFormatTemplate(alerts)
 	}
 	for _, subString := range SplitString(msgtext, cfg.SplitMessageBytes) {
-		msg := tgbotapi.NewMessage(chatid, subString)
+
+		sanitizedString := SanitizeMsg(subString)
+
+		msg := tgbotapi.NewMessage(chatid, sanitizedString)
 		msg.ParseMode = tgbotapi.ModeHTML
 
 		// Print in Log result message
