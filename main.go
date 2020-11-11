@@ -580,6 +580,7 @@ func POST_Handling(c *gin.Context) {
 	log.Println("+-----------------------------------------------------------+\n\n")
 
 	// Decide how format Text
+	log.Println("TemplatePath: " + cfg.TemplatePath)
 	if cfg.TemplatePath == "" {
 		msgtext = AlertFormatStandard(alerts)
 	} else {
