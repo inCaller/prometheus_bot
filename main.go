@@ -428,7 +428,9 @@ func main() {
 
 	log.Printf("Authorised on account %s", bot.Self.UserName)
 
-	if !cfg.SendOnly {
+	if cfg.SendOnly {
+		log.Printf("Works in send_only mode")
+	} else {
 		go telegramBot(bot)
 	}
 
