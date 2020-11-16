@@ -1,8 +1,7 @@
 FROM golang:1.14.4-alpine3.12 as builder
+RUN apk add --no-cache git ca-certificates make tzdata
 COPY . /app
-RUN \
-    apk add --no-cache git ca-certificates make tzdata && \
-    cd /app && \
+RUN cd /app && \
     go get -d -v && \
     CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o prometheus_bot
 
