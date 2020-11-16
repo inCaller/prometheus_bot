@@ -54,6 +54,7 @@ type Config struct {
 	TimeOutFormat     string `yaml:"time_outdata"`
 	SplitChart        string `yaml:"split_token"`
 	SplitMessageBytes int    `yaml:"split_msg_byte"`
+	SendOnly          bool   `yaml:"send_only"`
 }
 
 /**
@@ -427,7 +428,9 @@ func main() {
 
 	log.Printf("Authorised on account %s", bot.Self.UserName)
 
-	go telegramBot(bot)
+	if !cfg.SendOnly {
+		go telegramBot(bot)
+	}
 
 	router := gin.Default()
 
