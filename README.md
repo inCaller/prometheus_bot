@@ -24,7 +24,7 @@ make
     template_path: "template.tmpl" # ONLY IF YOU USING TEMPLATE
     time_zone: "Europe/Rome" # ONLY IF YOU USING TEMPLATE
     split_msg_byte: 4000
-    send_only: false # use bot only to send messages.
+    send_only: true # use bot only to send messages.
     ```
 
 3. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
