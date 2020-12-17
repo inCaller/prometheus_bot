@@ -45,6 +45,7 @@ type Alert struct {
 	GeneratorURL string                 `json:"generatorURL"`
 	Labels       map[string]interface{} `json:"labels"`
 	StartsAt     string                 `json:"startsAt"`
+	Duration     time.Duration
 }
 
 type Config struct {
@@ -323,10 +324,10 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 		log.Fatal(err)
 	}
 
-	introduce := func(update tgbotapi.Update) {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
-		bot.Send(msg)
-	}
+	//introduce := func(update tgbotapi.Update) {
+//		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
+//		bot.Send(msg)
+//	}
 
 	for update := range updates {
 		if update.Message == nil {
@@ -339,11 +340,11 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 		if update.Message.NewChatMembers != nil && len(*update.Message.NewChatMembers) > 0 {
 			for _, member := range *update.Message.NewChatMembers {
 				if member.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
-					introduce(update)
+					//introduce(update)
 				}
 			}
 		} else if update.Message != nil && update.Message.Text != "" {
-			introduce(update)
+			//introduce(update)
 		}
 	}
 }
@@ -598,6 +599,18 @@ func POST_Handling(c *gin.Context) {
 	}
 
 	binding.JSON.Bind(c.Request, &alerts)
+
+	for index, _ := range alerts.Alerts {
+		startsAt_time, err := time.Parse(time.RFC3339, alerts.Alerts[index].StartsAt)
+		if err != nil {
+			log.Print(err)
+		}
+		endsAt_time, err := time.Parse(time.RFC3339, alerts.Alerts[index].EndsAt)
+		if err != nil {
+			log.Print(err)
+		}
+		alerts.Alerts[index].Duration = endsAt_time.Sub(startsAt_time).Truncate(time.Second)
+	}
 
 	s, err := json.Marshal(alerts)
 	if err != nil {
