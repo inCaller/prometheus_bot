@@ -6,12 +6,10 @@ RUN go mod download
 COPY . .
 RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot
 
-
-FROM alpine:3.15.0 as alpine
-RUN apk add --no-cache ca-certificates tzdata
-
-
-FROM scratch
+FROM alpine:3.13.0
+COPY --from=builder /app/prometheus_bot /
+RUN apk add --no-cache ca-certificates tzdata tini
+USER nobody
 EXPOSE 9087
 WORKDIR /
 COPY --from=alpine /etc/passwd /etc/group /etc/
