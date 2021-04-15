@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"os"
 
 	"html/template"
 
@@ -401,10 +400,8 @@ func main() {
 	if cfg.SplitMessageBytes == 0 {
 		cfg.SplitMessageBytes = 4000
 	}
-
-	os.Setenv("HTTP_PROXY", cfg.Proxy)
 	
-	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, client *http.Client)
+	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, cfg.Proxy)
 	if err != nil {
 		log.Fatal(err)
 	}
