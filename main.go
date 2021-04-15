@@ -55,7 +55,7 @@ type Config struct {
 	SplitChart        string `yaml:"split_token"`
 	SplitMessageBytes int    `yaml:"split_msg_byte"`
 	SendOnly          bool   `yaml:"send_only"`
-	Proxy		  string `yaml:"proxy"`
+	Proxy		  *http.Client `yaml:"proxy"`
 }
 
 /**
