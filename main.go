@@ -55,7 +55,7 @@ type Config struct {
 	SplitChart        string `yaml:"split_token"`
 	SplitMessageBytes int    `yaml:"split_msg_byte"`
 	SendOnly          bool   `yaml:"send_only"`
-	Proxy		  *http.Client `yaml:"proxy"`
+	ProxyURL	  string `yaml:"proxy"`
 }
 
 /**
@@ -401,7 +401,10 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 	
-	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, cfg.Proxy)
+	proxy, _ := url.Parse(cfg.ProxyURL)
+	httpClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxy)}}
+	
+	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, httpClient)
 	if err != nil {
 		log.Fatal(err)
 	}
