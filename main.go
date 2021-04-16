@@ -401,8 +401,8 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 	
-    proxy, _ := url.Parse(cfg.ProxyLink)
-    http.DefaultTransport := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxy)}}
+	proxy, _ := url.Parse(cfg.ProxyLink)
+	http.DefaultTransport := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxy)}}
 	
 	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, httpClient)
 	if err != nil {
