@@ -403,6 +403,9 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 	
+	os.Setenv("HTTP_PROXY", cfg.ProxyLink)
+	fmt.Println("Proxy URL: ", os.Getenv("HTTP_PROXY"))
+	
 	proxyUrl, err := url.Parse(cfg.ProxyLink)
 	if err != nil {
 	    fmt.Println("Bad proxy URL", err)
