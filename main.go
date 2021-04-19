@@ -16,8 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"os"
-	"net/url"
+	"net/url"	
 
 	"html/template"
 
@@ -403,18 +402,15 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 	
-	os.Setenv("HTTP_PROXY", cfg.ProxyLink)
-	fmt.Println("proxy link is", os.Getenv("HTTP_PROXY"))
-	
 	proxyUrl, err := url.Parse(cfg.ProxyLink)
 	if err != nil {
 	    fmt.Println("Bad proxy URL", err)
 	    return
 	}
-	
-	myClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
-		
-	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, myClient)
+
+	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+
+	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		log.Fatal(err)
 	}
