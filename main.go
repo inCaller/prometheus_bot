@@ -16,7 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"net/url"	
+	"net/url"
+	"os"
 
 	"html/template"
 
@@ -408,12 +409,13 @@ func main() {
 	    return
 	}
 
-	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	myClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
 
-	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, myClient)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 
 	bot = bot_tmp
 	if *debug {
