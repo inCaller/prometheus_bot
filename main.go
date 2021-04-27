@@ -411,10 +411,17 @@ func main() {
 	    fmt.Println("Bad proxy URL", err)
 	    return
 	}
-
+	
+	#option 1
 	myClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
 
 	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, myClient)
+	
+	#option 2
+	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+
+        bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+
 	if err != nil {
 		log.Fatal(err)
 	}
