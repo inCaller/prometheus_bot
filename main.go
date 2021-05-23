@@ -40,6 +40,7 @@ type Alerts struct {
 }
 
 type Alert struct {
+	Status       string                 `json:"status"`
 	Annotations  map[string]interface{} `json:"annotations"`
 	EndsAt       string                 `json:"endsAt"`
 	GeneratorURL string                 `json:"generatorURL"`
