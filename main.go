@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"net/url"
+	"os"
 
 	"html/template"
 
@@ -56,6 +58,7 @@ type Config struct {
 	SplitChart        string `yaml:"split_token"`
 	SplitMessageBytes int    `yaml:"split_msg_byte"`
 	SendOnly          bool   `yaml:"send_only"`
+	ProxyLink	  string `yaml:"proxy"`
 }
 
 /**
@@ -400,11 +403,23 @@ func main() {
 	if cfg.SplitMessageBytes == 0 {
 		cfg.SplitMessageBytes = 4000
 	}
-
-	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+	
+	os.Setenv("HTTP_PROXY", cfg.ProxyLink)
+	fmt.Println("Proxy URL: ", os.Getenv("HTTP_PROXY"))
+	
+	proxyUrl, err := url.Parse(cfg.ProxyLink)
+	if err != nil {
+	    fmt.Println("Bad proxy URL", err)
+	    return
+	}
+	
+	myClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+	bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, myClient)
+	
 	if err != nil {
 		log.Fatal(err)
 	}
+
 
 	bot = bot_tmp
 	if *debug {
