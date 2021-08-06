@@ -6,7 +6,7 @@ RUN go mod download
 COPY . .
 RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot
 
-FROM alpine:3.14.0
+FROM alpine:3.14.1
 COPY --from=builder /app/prometheus_bot /
 RUN apk add --no-cache ca-certificates tzdata tini
 USER nobody
