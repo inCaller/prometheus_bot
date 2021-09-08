@@ -1,0 +1,29 @@
+version: '3'
+
+networks:
+  prometheus-bot:
+    name: prometheus-bot
+
+services:
+  prometheus-bot:
+    build:
+      context: .
+    image: monitoring/prometheus-bot
+    container_name: prometheus-bot
+    volumes:
+      #- ./template.tmpl:/template.tmpl:ro
+      - ./config.yaml:/config.yaml
+    environment:
+      #HTTP_PROXY: socks5://shadowsocks:1080
+      HTTPS_PROXY: socks5://shadowsocks:1080
+    expose:
+      - 9087
+    networks:
+      - prometheus-bot
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
