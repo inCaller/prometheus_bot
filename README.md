@@ -1,3 +1,14 @@
+- [prometheus_bot](#prometheus-bot)
+  * [Compile](#compile)
+  * [Usage](#usage)
+    + [Configuring alert manager](#configuring-alert-manager)
+  * [Test](#test)
+    + [Create your own test](#create-your-own-test)
+  * [Customising messages with template](#customising-messages-with-template)
+    + [Template extra functions](#template-extra-functions)
+      - [Support this functions list](#support-this-functions-list)
+  * [Production example](#production-example)
+
 # prometheus_bot
 
 This bot is designed to alert messages from [alertmanager](https://github.com/prometheus/alertmanager).
