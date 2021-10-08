@@ -295,6 +295,7 @@ func HasKey(dict map[string]interface{}, key_search string) bool {
 
 // Global
 var config_path = flag.String("c", "config.yaml", "Path to a config file")
+var token_path = flag.String("token-from", "", "Path to a file containing telegram_token")
 var listen_addr = flag.String("l", ":9087", "Listen address")
 var template_path = flag.String("t", "", "Path to a template file")
 var debug = flag.Bool("d", false, "Debug template")
@@ -395,6 +396,14 @@ func main() {
 
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
+	}
+
+	if *token_path != "" {
+		content, err := ioutil.ReadFile(*token_path)
+		if err != nil {
+			log.Fatalf("Problem reading token file: %v", err)
+		}
+		cfg.TelegramToken = strings.TrimSpace(string(content))
 	}
 
 	if cfg.SplitMessageBytes == 0 {
