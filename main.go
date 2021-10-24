@@ -49,13 +49,17 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken     string `yaml:"telegram_token"`
-	TemplatePath      string `yaml:"template_path"`
-	TimeZone          string `yaml:"time_zone"`
-	TimeOutFormat     string `yaml:"time_outdata"`
-	SplitChart        string `yaml:"split_token"`
-	SplitMessageBytes int    `yaml:"split_msg_byte"`
-	SendOnly          bool   `yaml:"send_only"`
+	TelegramToken              string `yaml:"telegram_token"`
+	TemplatePath               string `yaml:"template_path"`
+	TimeZone                   string `yaml:"time_zone"`
+	TimeOutFormat              string `yaml:"time_outdata"`
+	SplitChart                 string `yaml:"split_token"`
+	SplitMessageBytes          int    `yaml:"split_msg_byte"`
+	SendOnly                   bool   `yaml:"send_only"`
+	DeadmanSwitchName          string `yaml:"deadman_switch_name"`
+	DeadmanSwitchInterval      int    `yaml:"deadman_switch_interval"`
+	DeadmanSwitchAlertInterval int    `yaml:"deadman_switch_alert_interval"`
+	DeadmanSwitchAlertChatId   int64  `yaml:"deadman_switch_alert_chat_id"`
 }
 
 /**
@@ -304,6 +308,10 @@ var cfg = Config{}
 var bot *tgbotapi.BotAPI
 var tmpH *template.Template
 
+var lastAlertsStatus = make(map[string]string)
+var lastDeadmanSwitch time.Time
+var lastDeadmanSwitchAlert time.Time
+
 // Template addictional functions map
 var funcMap = template.FuncMap{
 	"str_FormatDate":         str_FormatDate,
@@ -346,6 +354,46 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 			}
 		} else if update.Message != nil && update.Message.Text != "" {
 			introduce(update)
+		}
+	}
+}
+
+func deadmanSwitchChecker() {
+	for {
+		time.Sleep(time.Duration(cfg.DeadmanSwitchInterval) * time.Second)
+		if time.Since(lastDeadmanSwitch).Seconds() <= float64(cfg.DeadmanSwitchInterval) {
+			// Deadman's switch received recently, nothing to do
+			continue
+		}
+
+		if time.Since(lastDeadmanSwitchAlert).Seconds() <= float64(cfg.DeadmanSwitchAlertInterval) {
+			// Alerted recently enough, nothing to do
+			continue
+		}
+
+		// Send alert about missing Deadman's Switch
+		alerts := Alerts{}
+		alerts.Alerts = append(alerts.Alerts, Alert{
+			Annotations: map[string]interface{}{
+				"description": "DeadmanSwitch is NOT firing. Something is wrong with the alerting stack.",
+				"summary":     "DeadmanSwitch is NOT firing",
+			},
+			EndsAt:       "",
+			GeneratorURL: "",
+			Labels: map[string]interface{}{
+				"alertname": cfg.DeadmanSwitchName + "NotFiring",
+				"severity":  "critical",
+			},
+			StartsAt: time.Now().Format(time.RFC3339Nano),
+			Status:   "firing",
+		})
+		alerts.Status = "firing"
+
+		err := HandleIncomingAlerts(cfg.DeadmanSwitchAlertChatId, alerts)
+		if err != nil {
+			log.Printf("Failed to send missing Deadman's Switch alert to Telegram: %+v", err)
+		} else {
+			lastDeadmanSwitchAlert = time.Now()
 		}
 	}
 }
@@ -410,6 +458,20 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 
+	if cfg.DeadmanSwitchName != "" {
+		if cfg.DeadmanSwitchAlertChatId == 0 {
+			log.Fatalf("DeadmanSwitchName is set, but the ChatId is not set")
+		}
+		if cfg.DeadmanSwitchInterval == 0 {
+			// assume the Deadman's Switch comes in at least every 70 seconds
+			cfg.DeadmanSwitchInterval = 70
+		}
+		if cfg.DeadmanSwitchAlertInterval == 0 {
+			// assume we need to send an alert about missing switches every 4 hours
+			cfg.DeadmanSwitchAlertInterval = 3600 * 4
+		}
+	}
+
 	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		log.Fatal(err)
@@ -442,6 +504,10 @@ func main() {
 		log.Printf("Works in send_only mode")
 	} else {
 		go telegramBot(bot)
+	}
+
+	if cfg.DeadmanSwitchName != "" {
+		go deadmanSwitchChecker()
 	}
 
 	router := gin.Default()
@@ -592,7 +658,6 @@ func SanitizeMsg(str string) string {
 }
 
 func POST_Handling(c *gin.Context) {
-	var msgtext string
 	var alerts Alerts
 
 	chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
@@ -619,6 +684,53 @@ func POST_Handling(c *gin.Context) {
 	log.Printf("%s", s)
 	log.Println("+-----------------------------------------------------------+\n\n")
 
+	err = HandleIncomingAlerts(chatid, alerts)
+	if err == nil {
+		c.String(http.StatusOK, "telegram msg sent.")
+	} else {
+		log.Printf("Error sending message: %s", err)
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"err": fmt.Sprint(err),
+		})
+	}
+}
+
+func HandleIncomingAlerts(chatid int64, alerts Alerts) error {
+	var msgtext string
+
+	if cfg.DeadmanSwitchName != "" {
+		// Remember when the DeadmanSwitch alert is firing and remove it from the list of alerts
+		for i, alert := range alerts.Alerts {
+			if alert.Labels["alertname"] == cfg.DeadmanSwitchName {
+				lastDeadmanSwitch = time.Now()
+				alerts.Alerts[i] = alerts.Alerts[len(alerts.Alerts)-1]
+				alerts.Alerts = alerts.Alerts[:len(alerts.Alerts)-1]
+				break
+			}
+		}
+
+		// If no alerts are firing now, set status to resolved
+		otherAlertsFiring := false
+		for _, alert := range alerts.Alerts {
+			if alert.Status == "firing" {
+				otherAlertsFiring = true
+				break
+			}
+		}
+		if !otherAlertsFiring {
+			alerts.Status = "resolved"
+		}
+
+		// If, at this point, the status is resolved and the last status for this group
+		// was also resolved, don't report this
+		group := fmt.Sprintf("%+v", alerts.GroupLabels)
+		if lastAlertsStatus[group] == "resolved" && alerts.Status == "resolved" {
+			return nil
+		}
+
+		lastAlertsStatus[group] = alerts.Status
+	}
+
 	// Decide how format Text
 	if cfg.TemplatePath == "" {
 		msgtext = AlertFormatStandard(alerts)
@@ -639,19 +751,13 @@ func POST_Handling(c *gin.Context) {
 
 		msg.DisableWebPagePreview = true
 
-		sendmsg, err := bot.Send(msg)
-		if err == nil {
-			c.String(http.StatusOK, "telegram msg sent.")
-		} else {
-			log.Printf("Error sending message: %s", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"err":     fmt.Sprint(err),
-				"message": sendmsg,
-				"srcmsg":  fmt.Sprint(msgtext),
-			})
+		_, err := bot.Send(msg)
+		if err != nil {
 			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
 			bot.Send(msg)
 		}
+		return err
 	}
 
+	return nil
 }

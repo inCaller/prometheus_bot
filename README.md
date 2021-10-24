@@ -58,6 +58,56 @@ Replace ```chat_id``` with the value you got from your bot, ***with everything i
 (Some chat_id's start with a ```-```, in this case, you must also include the ```-``` in the url)
 To use multiple chats just add more receivers.
 
+### Configuring deadman's switch
+
+Deadman's switches are alerts that are always firing. This way, we can check
+that the alerting stack is functional. We never want to receive an alert for a
+deadman's switch, but we want to receive an alert when it is missing.
+
+To enable sending deadman's switches, add this alert to your Prometheus config:
+
+```yml
+- alert: DeadMansSwitch
+  annotations:
+    description: This is a DeadMansSwitch meant to ensure that the entire Alerting
+      pipeline is functional.
+    summary: Alerting DeadMansSwitch
+  expr: vector(1)
+  labels:
+    severity: none
+```
+
+Then, add a subroute to your Alertmanager configuration to send the
+DeadMansSwitch alert to the Telegram bot continuously. Example configuration,
+where the 'telegram' receiver is configured as in the previous section:
+
+```yml
+route:
+  group_interval: 5m
+  group_wait: 30s
+  receiver: telegram
+  repeat_interval: 4h
+  routes:
+  - group_by:
+    - alertname
+    group_interval: 1m
+    group_wait: 0s
+    match:
+      alertname: DeadMansSwitch
+    repeat_interval: 50s
+```
+
+This will send a DeadMansSwitch alert to your Telegram bot every 50 seconds.
+Now, we add these lines to the bot's `config.yaml` to ignore DeadMansSwitch
+alerts, but send an alert when the DeadMansSwitch alert is absent for more than
+60 seconds:
+
+```yml
+deadman_switch_name: "DeadMansSwitch"
+deadman_switch_interval: 60
+deadman_switch_alert_chat_id: [your chat ID]
+```
+
 ## Test
 
 To run tests with `make test` you have to:
