@@ -59,7 +59,7 @@ type Config struct {
 }
 
 /**
- * Subdivideb by 1024
+ * Subdivided by 1024
  */
 const (
 	Kb = iota
