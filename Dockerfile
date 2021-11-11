@@ -1,4 +1,4 @@
-FROM golang:1.14.4-alpine3.12 as builder
+FROM golang:1.17.3-alpine3.14 as builder
 RUN apk add --no-cache git ca-certificates make tzdata
 COPY . /app
 RUN cd /app && \
