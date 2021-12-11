@@ -389,10 +389,8 @@ func deadmanSwitchChecker() {
 		})
 		alerts.Status = "firing"
 
-		err := HandleIncomingAlerts(cfg.DeadmanSwitchAlertChatId, alerts)
-		if err != nil {
-			log.Printf("Failed to send missing Deadman's Switch alert to Telegram: %+v", err)
-		} else {
+		err := HandleIncomingAlerts(nil, cfg.DeadmanSwitchAlertChatId, alerts)
+		if err == nil {
 			lastDeadmanSwitchAlert = time.Now()
 		}
 	}
@@ -684,18 +682,11 @@ func POST_Handling(c *gin.Context) {
 	log.Printf("%s", s)
 	log.Println("+-----------------------------------------------------------+\n\n")
 
-	err = HandleIncomingAlerts(chatid, alerts)
-	if err == nil {
-		c.String(http.StatusOK, "telegram msg sent.")
-	} else {
-		log.Printf("Error sending message: %s", err)
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"err": fmt.Sprint(err),
-		})
-	}
+	HandleIncomingAlerts(c, chatid, alerts)
+	// err already handled inside HandleIncomingAlerts
 }
 
-func HandleIncomingAlerts(chatid int64, alerts Alerts) error {
+func HandleIncomingAlerts(c *gin.Context, chatid int64, alerts Alerts) error {
 	var msgtext string
 
 	if cfg.DeadmanSwitchName != "" {
@@ -751,12 +742,24 @@ func HandleIncomingAlerts(chatid int64, alerts Alerts) error {
 
 		msg.DisableWebPagePreview = true
 
-		_, err := bot.Send(msg)
-		if err != nil {
+		sendmsg, err := bot.Send(msg)
+		if err == nil {
+			if c != nil {
+				c.String(http.StatusOK, "telegram msg sent.")
+			}
+		} else {
+			log.Printf("Error sending message: %s", err)
+			if c != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{
+					"err":     fmt.Sprint(err),
+					"message": sendmsg,
+					"srcmsg":  fmt.Sprint(msgtext),
+				})
+			}
 			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
 			bot.Send(msg)
+			return err
 		}
-		return err
 	}
 
 	return nil
