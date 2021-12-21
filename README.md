@@ -94,6 +94,7 @@ telegram_token: "token here"
 template_path: "template.tmpl" # your template file name
 time_zone: "Europe/Rome" # your time zone check it out from WIKI
 split_token: "|" # token used for split measure label.
+disable_notification: true  # disable notification for messages.
 ```
 
 You can also pass template path with `-t` command line argument, it has higher priority than the config option.

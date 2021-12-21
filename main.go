@@ -22,7 +22,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/microcosm-cc/bluemonday"
-	"gopkg.in/telegram-bot-api.v4"
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 
 	"gopkg.in/yaml.v2"
 )
@@ -49,13 +49,14 @@ type Alert struct {
 }
 
 type Config struct {
-	TelegramToken     string `yaml:"telegram_token"`
-	TemplatePath      string `yaml:"template_path"`
-	TimeZone          string `yaml:"time_zone"`
-	TimeOutFormat     string `yaml:"time_outdata"`
-	SplitChart        string `yaml:"split_token"`
-	SplitMessageBytes int    `yaml:"split_msg_byte"`
-	SendOnly          bool   `yaml:"send_only"`
+	TelegramToken       string `yaml:"telegram_token"`
+	TemplatePath        string `yaml:"template_path"`
+	TimeZone            string `yaml:"time_zone"`
+	TimeOutFormat       string `yaml:"time_outdata"`
+	SplitChart          string `yaml:"split_token"`
+	SplitMessageBytes   int    `yaml:"split_msg_byte"`
+	SendOnly            bool   `yaml:"send_only"`
+	DisableNotification bool   `yaml:"disable_notification"`
 }
 
 /**
@@ -327,6 +328,9 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 
 	introduce := func(update tgbotapi.Update) {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
+		if cfg.DisableNotification {
+			msg.DisableNotification = true
+		}
 		bot.Send(msg)
 	}
 
@@ -465,6 +469,9 @@ func GET_Handling(c *gin.Context) {
 	log.Printf("Bot test: %d", chatid)
 	msgtext := fmt.Sprintf("Some HTTP triggered notification by prometheus bot... %d", chatid)
 	msg := tgbotapi.NewMessage(chatid, msgtext)
+	if cfg.DisableNotification {
+		msg.DisableNotification = true
+	}
 	sendmsg, err := bot.Send(msg)
 	if err == nil {
 		c.String(http.StatusOK, msgtext)
@@ -638,6 +645,9 @@ func POST_Handling(c *gin.Context) {
 		log.Println("+-----------------------------------------------------------+")
 
 		msg.DisableWebPagePreview = true
+		if cfg.DisableNotification {
+			msg.DisableNotification = true
+		}
 
 		sendmsg, err := bot.Send(msg)
 		if err == nil {
@@ -650,6 +660,9 @@ func POST_Handling(c *gin.Context) {
 				"srcmsg":  fmt.Sprint(msgtext),
 			})
 			msg := tgbotapi.NewMessage(chatid, "Error sending message, checkout logs")
+			if cfg.DisableNotification {
+				msg.DisableNotification = true
+			}
 			bot.Send(msg)
 		}
 	}
