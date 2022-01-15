@@ -1,14 +1,22 @@
-FROM golang:1.17.5-alpine3.15 as builder
-RUN apk add --no-cache git ca-certificates make tzdata
-COPY . /app
-RUN cd /app && \
-    go get -d -v && \
-    CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o prometheus_bot
+FROM golang:1.17.6-alpine3.15 as builder
+RUN apk add --update --no-cache ca-certificates tzdata
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1000
+WORKDIR /app
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot
 
-FROM alpine:3.14
-COPY --from=builder /app/prometheus_bot /
-RUN apk add --no-cache ca-certificates tzdata tini
-USER nobody
+FROM scratch
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder \
+  /etc/passwd \
+  /etc/group \
+ /etc/
+WORKDIR /app
+COPY --from=builder /app/prometheus_bot .
+USER appuser
 EXPOSE 9087
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/prometheus_bot"]
+CMD ["/app/prometheus_bot"]
