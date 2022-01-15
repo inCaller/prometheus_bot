@@ -1,6 +1,6 @@
 FROM golang:1.17.6-alpine3.15 as builder
-RUN apk add --update --no-cache ca-certificates tzdata
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1000
+RUN apk add --update --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY go.mod .
 COPY go.sum .
@@ -15,8 +15,8 @@ COPY --from=builder \
   /etc/passwd \
   /etc/group \
  /etc/
-WORKDIR /app
+WORKDIR /
 COPY --from=builder /app/prometheus_bot .
 USER appuser
 EXPOSE 9087
-CMD ["/app/prometheus_bot"]
+CMD ["/prometheus_bot"]
