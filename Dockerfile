@@ -1,6 +1,6 @@
 FROM golang:1.17.6-alpine3.15 as builder
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1000
-RUN apk add --update --no-cache ca-certificates tzdata
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -u 1000 \
+  && apk add --update --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY go.mod .
 COPY go.sum .
