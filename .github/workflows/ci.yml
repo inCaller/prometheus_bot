@@ -33,11 +33,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build docker image.
-        run: docker build --no-cache --tag ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID} .
+        run: docker build --no-cache --tag ${GITHUB_REPOSITORY,,}:${GITHUB_RUN_ID} .
 
       - name: Run a container of created image.
         run: |
-          DOCKERCONTAINER=$(docker run -d ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID})
+          DOCKERCONTAINER=$(docker run -d ${GITHUB_REPOSITORY,,}:${GITHUB_RUN_ID})
           sleep 5
           echo "DOCKERCONTAINER=$DOCKERCONTAINER" >> $GITHUB_ENV
 
