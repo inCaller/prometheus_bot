@@ -414,12 +414,6 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 
-	bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot = bot_tmp
 	if *debug {
 		bot.Debug = true
 	}
@@ -438,6 +432,17 @@ func main() {
 	}
 	if !(*debug) {
 		gin.SetMode(gin.ReleaseMode)
+	}
+
+	for {
+		bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+		if err == nil {
+			bot = bot_tmp
+			break
+		} else {
+			log.Printf("Error initializing telegram connection: %s", err)
+			time.Sleep(time.Second)
+		}
 	}
 
 	log.Printf("Authorised on account %s", bot.Self.UserName)
