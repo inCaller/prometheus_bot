@@ -414,9 +414,6 @@ func main() {
 		cfg.SplitMessageBytes = 4000
 	}
 
-	if *debug {
-		bot.Debug = true
-	}
 	if cfg.TemplatePath != "" {
 
 		tmpH = loadTemplate(cfg.TemplatePath)
@@ -443,6 +440,10 @@ func main() {
 			log.Printf("Error initializing telegram connection: %s", err)
 			time.Sleep(time.Second)
 		}
+	}
+
+	if *debug {
+		bot.Debug = true
 	}
 
 	log.Printf("Authorised on account %s", bot.Self.UserName)
