@@ -1,4 +1,4 @@
-FROM golang:1.17.6-alpine3.15 as builder
+FROM golang:1.17.6-alpine3.17 as builder
 WORKDIR /app
 COPY go.mod .
 COPY go.sum .
@@ -7,7 +7,7 @@ COPY . .
 RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot
 
 
-FROM alpine:3.15.0 as alpine
+FROM alpine:3.17.2 as alpine
 RUN apk add --no-cache ca-certificates tzdata
 
 
