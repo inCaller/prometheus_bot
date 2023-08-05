@@ -391,12 +391,14 @@ func main() {
 
 	content, err := os.ReadFile(*config_path)
 	if err != nil {
-		log.Fatalf("Problem reading configuration file: %v", err)
+		log.Printf("Problem reading configuration file: %v", err)
 	}
 	err = yaml.Unmarshal(content, &cfg)
 	if err != nil {
-		log.Fatalf("Error parsing configuration file: %v", err)
+		log.Printf("Error parsing configuration file: %v", err)
 	}
+
+	populateConfigWithEnvironmentVariables(&cfg)
 
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
@@ -458,6 +460,22 @@ func main() {
 	router.GET("/ping/:chatid", GET_Handling)
 	router.POST("/alert/:chatid", POST_Handling)
 	router.Run(*listen_addr)
+}
+
+func populateConfigWithEnvironmentVariables(cfg *Config) {
+	telegramToken, found := os.LookupEnv("TELEGRAM_TOKEN")
+	if found {
+		cfg.TelegramToken = telegramToken
+	}
+
+	sendOnly, found := os.LookupEnv("SEND_ONLY")
+	if found {
+		sendOnlyBool, err := strconv.ParseBool(sendOnly)
+		if err != nil {
+			log.Fatalf("Error parsing sendOnly variable: %v", err)
+		}
+		cfg.SendOnly = sendOnlyBool
+	}
 }
 
 func GET_Handling(c *gin.Context) {
