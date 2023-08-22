@@ -7,10 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -389,21 +389,23 @@ func SplitString(s string, n int) []string {
 func main() {
 	flag.Parse()
 
-	content, err := ioutil.ReadFile(*config_path)
+	content, err := os.ReadFile(*config_path)
 	if err != nil {
-		log.Fatalf("Problem reading configuration file: %v", err)
+		log.Printf("Problem reading configuration file: %v", err)
 	}
 	err = yaml.Unmarshal(content, &cfg)
 	if err != nil {
-		log.Fatalf("Error parsing configuration file: %v", err)
+		log.Printf("Error parsing configuration file: %v", err)
 	}
+
+	populateConfigWithEnvironmentVariables(&cfg)
 
 	if *template_path != "" {
 		cfg.TemplatePath = *template_path
 	}
 
 	if *token_path != "" {
-		content, err := ioutil.ReadFile(*token_path)
+		content, err := os.ReadFile(*token_path)
 		if err != nil {
 			log.Fatalf("Problem reading token file: %v", err)
 		}
@@ -420,7 +422,6 @@ func main() {
 
 		if cfg.TimeZone == "" {
 			log.Fatalf("You must define time_zone of your bot")
-			panic(-1)
 		}
 
 	} else {
@@ -461,11 +462,27 @@ func main() {
 	router.Run(*listen_addr)
 }
 
+func populateConfigWithEnvironmentVariables(cfg *Config) {
+	telegramToken, found := os.LookupEnv("TELEGRAM_TOKEN")
+	if found {
+		cfg.TelegramToken = telegramToken
+	}
+
+	sendOnly, found := os.LookupEnv("SEND_ONLY")
+	if found {
+		sendOnlyBool, err := strconv.ParseBool(sendOnly)
+		if err != nil {
+			log.Fatalf("Error parsing sendOnly variable: %v", err)
+		}
+		cfg.SendOnly = sendOnlyBool
+	}
+}
+
 func GET_Handling(c *gin.Context) {
 	log.Printf("Received GET")
 	chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
 	if err != nil {
-		log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
+		log.Printf("Can't parse chat id: %q", c.Param("chatid"))
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"err": fmt.Sprint(err),
 		})
@@ -565,7 +582,6 @@ func AlertFormatTemplate(alerts Alerts) string {
 
 	if err != nil {
 		log.Fatalf("Problem with template execution: %v", err)
-		panic(err)
 	}
 
 	return bytesBuff.String()
@@ -613,7 +629,7 @@ func POST_Handling(c *gin.Context) {
 	log.Printf("Bot alert post: %d", chatid)
 
 	if err != nil {
-		log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
+		log.Printf("Can't parse chat id: %q", c.Param("chatid"))
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"err": fmt.Sprint(err),
 		})
