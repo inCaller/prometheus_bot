@@ -58,6 +58,14 @@ Replace ```chat_id``` with the value you got from your bot, ***with everything i
 (Some chat_id's start with a ```-```, in this case, you must also include the ```-``` in the url)
 To use multiple chats just add more receivers.
 
+If you want send messages to topic chat, append ```topic_id``` after ```chat_id```.
+```yml
+- name: 'admins'
+  webhook_configs:
+  - send_resolved: True
+    url: http://127.0.0.1:9087/alert/chat_id/topic_id
+```
+
 ## Test
 
 To run tests with `make test` you have to:
