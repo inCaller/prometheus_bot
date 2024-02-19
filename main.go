@@ -457,24 +457,21 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/ping/:chatid", GET_Handling)
+	router.GET("/ping/:chatid/:topicid", GET_Handling)
 	router.POST("/alert/:chatid", POST_Handling)
+	router.POST("/alert/:chatid/:topicid", POST_Handling)
 	router.Run(*listen_addr)
 }
 
 func GET_Handling(c *gin.Context) {
 	log.Printf("Received GET")
-	chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
-	if err != nil {
-		log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"err": fmt.Sprint(err),
-		})
-		return
-	}
+	topicid := getID(c, "topicid")
+	chatid := getID(c, "chatid")
+	log.Printf("Bot test: %d:%d", chatid, topicid)
 
-	log.Printf("Bot test: %d", chatid)
-	msgtext := fmt.Sprintf("Some HTTP triggered notification by prometheus bot... %d", chatid)
+	msgtext := fmt.Sprintf("Some HTTP triggered notification by prometheus bot... %d:%d", chatid, topicid)
 	msg := tgbotapi.NewMessage(chatid, msgtext)
+	msg.ReplyToMessageID = int(topicid)
 	if cfg.DisableNotification {
 		msg.DisableNotification = true
 	}
@@ -604,21 +601,29 @@ func SanitizeMsg(str string) string {
 	return str
 }
 
+// get id from relative path
+func getID(c *gin.Context, param string) int64 {
+	// default topicid for messageConfig 0
+	if c.Param(param) == "" && param == "topicid" {
+		return 0
+	}
+	id, err := strconv.ParseInt(c.Param(param), 10, 64)
+	if err != nil {
+		log.Printf("Cat't parse %s id: %q", param, c.Param(param))
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"err": fmt.Sprint(err),
+		})
+	}
+	return id
+}
+
 func POST_Handling(c *gin.Context) {
 	var msgtext string
 	var alerts Alerts
 
-	chatid, err := strconv.ParseInt(c.Param("chatid"), 10, 64)
-
-	log.Printf("Bot alert post: %d", chatid)
-
-	if err != nil {
-		log.Printf("Cat't parse chat id: %q", c.Param("chatid"))
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"err": fmt.Sprint(err),
-		})
-		return
-	}
+	topicid := getID(c, "topicid")
+	chatid := getID(c, "chatid")
+	log.Printf("Bot alert post: chat %d, topic %d", chatid, topicid)
 
 	binding.JSON.Bind(c.Request, &alerts)
 
@@ -644,6 +649,7 @@ func POST_Handling(c *gin.Context) {
 
 		msg := tgbotapi.NewMessage(chatid, sanitizedString)
 		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyToMessageID = int(topicid)
 
 		// Print in Log result message
 		log.Println("+---------------  F I N A L   M E S S A G E  ---------------+")
