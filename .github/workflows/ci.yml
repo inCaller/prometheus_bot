@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
 
       - name: Install hadolint.
         run: |
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
 
       - name: Build docker image.
         run: docker build --no-cache --tag ${GITHUB_REPOSITORY,,}:${GITHUB_RUN_ID} .
@@ -54,17 +54,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@master
 
       - name: Login to Quay
-        uses: docker/login-action@v1
+        uses: docker/login-action@master
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Push to Quay
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@master
         with:
           file: ./Dockerfile
           pull: true
