@@ -305,7 +305,7 @@ var cfg = Config{}
 var bot *tgbotapi.BotAPI
 var tmpH *template.Template
 
-// Template addictional functions map
+// Template additional functions map
 var funcMap = template.FuncMap{
 	"str_FormatDate":         str_FormatDate,
 	"str_UpperCase":          strings.ToUpper,
@@ -315,6 +315,7 @@ var funcMap = template.FuncMap{
 	"str_Format_Byte":        str_Format_Byte,
 	"str_Format_MeasureUnit": str_Format_MeasureUnit,
 	"HasKey":                 HasKey,
+	"contains":               strings.Contains,
 }
 
 func telegramBot(bot *tgbotapi.BotAPI) {
