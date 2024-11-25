@@ -1,6 +1,6 @@
 ---
 name: CI/CD
-'on':
+on:
   pull_request:
   push:
     branches:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install hadolint.
         run: |
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build docker image.
         run: docker build --no-cache --tag ${GITHUB_REPOSITORY,,}:${GITHUB_RUN_ID} .
