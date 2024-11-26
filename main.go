@@ -578,23 +578,16 @@ func SanitizeMsg(str string) string {
 	d.Strict = false
 	d.AutoClose = xml.HTMLAutoClose
 	d.Entity = xml.HTMLEntity
-	exitParser := false
+
 	for {
 		_, err := d.Token()
-		switch err {
-		case io.EOF:
+		if err == io.EOF {
 			log.Println("HTML is valid, sending it...")
-			exitParser = true
 			break
-		case nil:
-		default:
+		} else if err != nil {
 			log.Println("HTML is not valid, strip all tags to prevent error")
 			p := bluemonday.StrictPolicy()
 			str = p.Sanitize(str)
-			exitParser = true
-			break
-		}
-		if exitParser {
 			break
 		}
 	}
