@@ -15,15 +15,9 @@ jobs:
       - name: Check out the codebase.
         uses: actions/checkout@v4
 
-      - name: Install hadolint.
-        run: |
-          sudo curl -L https://github.com/hadolint/hadolint/releases/download/v$HADOLINT_VERSION/hadolint-$(uname -s)-$(uname -m) -o /usr/local/bin/hadolint
-          sudo chmod 755 /usr/local/bin/hadolint
-        env:
-          HADOLINT_VERSION: 2.8.0
-
-      - name: Run hadolint.
-        run: hadolint --ignore DL3003 --ignore DL3018 Dockerfile
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          ignore: DL3018
 
   build:
     name: Build and test docker
