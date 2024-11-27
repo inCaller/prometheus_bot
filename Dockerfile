@@ -1,7 +1,6 @@
 FROM golang:1.22.9-alpine as builder
 WORKDIR /app
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot

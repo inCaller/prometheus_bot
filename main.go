@@ -161,7 +161,7 @@ func str_Format_MeasureUnit(MeasureUnit string, value string) string {
 }
 
 // Scale number for It measure unit
-func str_Format_Byte(in string, j1 int) string {
+func str_Format_Byte(in string, initial int) string {
 	var str_Size string
 
 	f, err := strconv.ParseFloat(in, 64)
@@ -170,7 +170,7 @@ func str_Format_Byte(in string, j1 int) string {
 		panic(err)
 	}
 
-	for j1 = 0; j1 < (Information_Size_MAX + 1); j1++ {
+	for j1 := initial; j1 < (Information_Size_MAX + 1); j1++ {
 
 		if j1 >= Information_Size_MAX {
 			str_Size = "Yb"
@@ -206,7 +206,7 @@ func str_Format_Byte(in string, j1 int) string {
 }
 
 // Format number for fisics measure unit
-func str_Format_Scale(in string, j1 int) string {
+func str_Format_Scale(in string, initial int) string {
 	var str_Size string
 
 	f, err := strconv.ParseFloat(in, 64)
@@ -215,7 +215,7 @@ func str_Format_Scale(in string, j1 int) string {
 		panic(err)
 	}
 
-	for j1 = 0; j1 < (Scale_Size_MAX + 1); j1++ {
+	for j1 := initial; j1 < (Scale_Size_MAX + 1); j1++ {
 
 		if j1 >= Scale_Size_MAX {
 			str_Size = "Y"
@@ -578,23 +578,16 @@ func SanitizeMsg(str string) string {
 	d.Strict = false
 	d.AutoClose = xml.HTMLAutoClose
 	d.Entity = xml.HTMLEntity
-	exitParser := false
+
 	for {
 		_, err := d.Token()
-		switch err {
-		case io.EOF:
+		if err == io.EOF {
 			log.Println("HTML is valid, sending it...")
-			exitParser = true
 			break
-		case nil:
-		default:
+		} else if err != nil {
 			log.Println("HTML is not valid, strip all tags to prevent error")
 			p := bluemonday.StrictPolicy()
 			str = p.Sanitize(str)
-			exitParser = true
-			break
-		}
-		if exitParser {
 			break
 		}
 	}
