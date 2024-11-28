@@ -7,10 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"path"
 	"sort"
 	"strconv"
@@ -267,13 +267,11 @@ func str_FormatDate(toformat string) string {
 
 	// Error handling
 	if cfg.TimeZone == "" {
-		log.Println("template_time_zone is not set, if you use template and `str_FormatDate` func is required")
-		panic(nil)
+		log.Fatal("template_time_zone is not set, if you use template and `str_FormatDate` func is required")
 	}
 
 	if cfg.TimeOutFormat == "" {
-		log.Println("template_time_outdata param is not set, if you use template and `str_FormatDate` func is required")
-		panic(nil)
+		log.Fatal("template_time_outdata param is not set, if you use template and `str_FormatDate` func is required")
 	}
 
 	t, err := time.Parse(time.RFC3339Nano, toformat)
@@ -390,7 +388,7 @@ func SplitString(s string, n int) []string {
 func main() {
 	flag.Parse()
 
-	content, err := ioutil.ReadFile(*config_path)
+	content, err := os.ReadFile(*config_path)
 	if err != nil {
 		log.Fatalf("Problem reading configuration file: %v", err)
 	}
@@ -404,7 +402,7 @@ func main() {
 	}
 
 	if *token_path != "" {
-		content, err := ioutil.ReadFile(*token_path)
+		content, err := os.ReadFile(*token_path)
 		if err != nil {
 			log.Fatalf("Problem reading token file: %v", err)
 		}
@@ -421,7 +419,6 @@ func main() {
 
 		if cfg.TimeZone == "" {
 			log.Fatalf("You must define time_zone of your bot")
-			panic(-1)
 		}
 
 	} else {
@@ -563,7 +560,6 @@ func AlertFormatTemplate(alerts Alerts) string {
 
 	if err != nil {
 		log.Fatalf("Problem with template execution: %v", err)
-		panic(err)
 	}
 
 	return bytesBuff.String()
@@ -603,7 +599,7 @@ func getID(c *gin.Context, param string) int64 {
 	}
 	id, err := strconv.ParseInt(c.Param(param), 10, 64)
 	if err != nil {
-		log.Printf("Cat't parse %s id: %q", param, c.Param(param))
+		log.Printf("Can't parse %s id: %q", param, c.Param(param))
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"err": fmt.Sprint(err),
 		})
@@ -629,7 +625,7 @@ func POST_Handling(c *gin.Context) {
 
 	log.Println("+------------------  A L E R T  J S O N  -------------------+")
 	log.Printf("%s", s)
-	log.Println("+-----------------------------------------------------------+\n\n")
+	log.Println("+-----------------------------------------------------------+")
 
 	// Decide how format Text
 	if cfg.TemplatePath == "" {
