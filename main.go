@@ -455,7 +455,11 @@ func main() {
 	router.GET("/ping/:chatid/:topicid", GET_Handling)
 	router.POST("/alert/:chatid", POST_Handling)
 	router.POST("/alert/:chatid/:topicid", POST_Handling)
-	router.Run(*listen_addr)
+
+	err = router.Run(*listen_addr)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GET_Handling(c *gin.Context) {
