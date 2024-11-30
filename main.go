@@ -24,7 +24,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Alerts struct {
