@@ -22,9 +22,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/microcosm-cc/bluemonday"
-	tgbotapi "gopkg.in/telegram-bot-api.v4"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Alerts struct {
@@ -320,10 +320,7 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
-	if err != nil {
-		log.Fatal(err)
-	}
+	updates := bot.GetUpdatesChan(u)
 
 	introduce := func(update tgbotapi.Update) {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Chat id is '%d'", update.Message.Chat.ID))
@@ -341,8 +338,8 @@ func telegramBot(bot *tgbotapi.BotAPI) {
 			continue
 		}
 
-		if update.Message.NewChatMembers != nil && len(*update.Message.NewChatMembers) > 0 {
-			for _, member := range *update.Message.NewChatMembers {
+		if len(update.Message.NewChatMembers) > 0 {
+			for _, member := range update.Message.NewChatMembers {
 				if member.UserName == bot.Self.UserName && update.Message.Chat.Type == "group" {
 					introduce(update)
 				}
@@ -458,7 +455,11 @@ func main() {
 	router.GET("/ping/:chatid/:topicid", GET_Handling)
 	router.POST("/alert/:chatid", POST_Handling)
 	router.POST("/alert/:chatid/:topicid", POST_Handling)
-	router.Run(*listen_addr)
+
+	err = router.Run(*listen_addr)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GET_Handling(c *gin.Context) {
