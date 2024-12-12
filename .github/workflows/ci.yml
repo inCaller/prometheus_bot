@@ -56,6 +56,9 @@ jobs:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
     steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@main
+
       - name: Log in to the Container registry
         uses: docker/login-action@master
         with:
