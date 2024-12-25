@@ -16,7 +16,7 @@ This bot is designed to alert messages from [alertmanager](https://github.com/pr
 
 ## Docker Image
 
-You can run it using deployed image in ghcr.io/inCaller/prometheus_bot.
+You can run it using deployed image in ghcr.io/incaller/prometheus_bot.
 
 ## Compile
 
