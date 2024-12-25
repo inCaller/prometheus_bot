@@ -54,7 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
     permissions:
       contents: read
       packages: write
@@ -63,6 +62,10 @@ jobs:
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@main
+
+      - name: Set IMAGE_NAME env as github_repository lower-case
+        run: |
+          echo IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
 
       - name: Log in to the Container registry
         uses: docker/login-action@master
