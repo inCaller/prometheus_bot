@@ -6,7 +6,7 @@ COPY . .
 RUN GOGC=off CGO_ENABLED=0 go build -v -o prometheus_bot
 
 
-FROM alpine:3.21 as alpine
+FROM alpine:3.22 as alpine
 RUN apk add --no-cache ca-certificates tzdata
 
 
