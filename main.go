@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"sort"
@@ -57,6 +58,7 @@ type Config struct {
 	SplitMessageBytes   int    `yaml:"split_msg_byte"`
 	SendOnly            bool   `yaml:"send_only"`
 	DisableNotification bool   `yaml:"disable_notification"`
+	ProxyURL            string `yaml:"proxy_url"`
 }
 
 /**
@@ -292,6 +294,37 @@ func HasKey(dict map[string]interface{}, key_search string) bool {
 	return false
 }
 
+func telegramHTTPClient(proxyURL string) (*http.Client, error) {
+	client := &http.Client{}
+	if proxyURL == "" {
+		return client, nil
+	}
+
+	u, err := url.Parse(proxyURL)
+	if err != nil {
+		return nil, err
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return nil, fmt.Errorf("proxy_url must include scheme and host")
+	}
+
+	client.Transport = &http.Transport{
+		Proxy: http.ProxyURL(u),
+	}
+	return client, nil
+}
+
+func sanitizeProxyURL(proxyURL string) string {
+	u, err := url.Parse(proxyURL)
+	if err != nil {
+		return proxyURL
+	}
+	if u.User != nil {
+		u.User = url.UserPassword(u.User.Username(), "***")
+	}
+	return u.String()
+}
+
 // Global
 var config_path = flag.String("c", "config.yaml", "Path to a config file")
 var token_path = flag.String("token-from", "", "Path to a file containing telegram_token")
@@ -426,8 +459,16 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	client, err := telegramHTTPClient(cfg.ProxyURL)
+	if err != nil {
+		log.Fatalf("Invalid proxy_url: %s", err)
+	}
+	if cfg.ProxyURL != "" {
+		log.Printf("Using proxy for Telegram API: %s", sanitizeProxyURL(cfg.ProxyURL))
+	}
+
 	for {
-		bot_tmp, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+		bot_tmp, err := tgbotapi.NewBotAPIWithClient(cfg.TelegramToken, tgbotapi.APIEndpoint, client)
 		if err == nil {
 			bot = bot_tmp
 			break

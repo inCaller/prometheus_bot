@@ -41,6 +41,9 @@ make
     time_zone: "Europe/Rome" # ONLY IF YOU USING TEMPLATE
     split_msg_byte: 4000
     send_only: true # use bot only to send messages.
+    # optional: HTTP(S) or SOCKS5 proxy for Telegram API egress
+    # proxy_url: "socks5://user:pass@127.0.0.1:1080"
+    # proxy_url: "http://user:pass@proxy.example:8080"
     ```
 
 3. Run ```telegram_bot```. See ```prometheus_bot --help``` for command line options
